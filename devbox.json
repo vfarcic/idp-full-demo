@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.13.6/.schema/devbox.schema.json",
+  "packages": [
+    "nushell@0.100.0",
+    "kubectl@1.31.2",
+    "kind@0.24.0",
+    "zellij@0.41.2",
+    "kubernetes-helm@3.16.3",
+    "google-cloud-sdk@501.0.0",
+    "crossplane-cli@1.17.1"
+  ],
+  "shell": {
+    "init_hook": [
+      "echo 'Welcome to devbox!' > /dev/null"
+    ],
+    "scripts": {
+      "test": [
+        "echo \"Error: no test specified\" && exit 1"
+      ]
+    }
+  }
+}
