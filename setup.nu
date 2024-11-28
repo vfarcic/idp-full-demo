@@ -28,7 +28,23 @@ open apps/silly-demo.yaml
     | upsert spec.parameters.image $"ghcr.io/($github_data.user)/idp-full-demo:FIXME:"
     | save apps/silly-demo.yaml --force
 
+(
+    docker login
+        --username $github_data.user
+        --password $github_data.token
+        $"ghcr.io/($github_data.user)"
+)
+
 gh secret set REGISTRY_PASSWORD $"-b($github_data.token)"
+
+start $"https://github.com/($github_data.user)/idp-full-demo/settings/actions"
+
+print $"
+Select (ansi yellow_bold)Read and write permissions(ansi reset) in the (ansi yellow_bold)Workflow permissions(ansi reset) section.
+Click the (ansi yellow_bold)Save(ansi reset) button.
+Press any key to continue.
+"
+input
 
 
 # GITHUB_NAME=$(gh repo view --json nameWithOwner \
