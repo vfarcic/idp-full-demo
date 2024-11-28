@@ -18,6 +18,6 @@ def --env get_github_auth [] {
     }
     $"export GITHUB_USER=($github_user)\n" | save --append .env
 
-    {github_user: $github_user, github_token: $github_token}
+    {user: $github_user, token: $github_token}
 
 }

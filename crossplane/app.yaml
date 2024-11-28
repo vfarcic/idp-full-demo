@@ -12,9 +12,9 @@ spec:
       location: local
   parameters:
     namespace: a-team
-    image: ghcr.io/vfarcic/silly-demo:1.4.310
+    image: 'ghcr.io/vfarcic/idp-full-demo:FIXME:'
     port: 8080
     host: silly-demo.127.0.0.1.nip.io
     ingressClassName: nginx
     db:
-      secret: my-db
+      secret: silly-demo-db

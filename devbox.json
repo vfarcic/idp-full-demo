@@ -7,7 +7,11 @@
     "zellij@0.41.2",
     "kubernetes-helm@3.16.3",
     "google-cloud-sdk@501.0.0",
-    "crossplane-cli@1.17.1"
+    "crossplane-cli@1.17.1",
+    "teller@2.0.7",
+    "earthly@0.8.15",
+    "go@1.23.3",
+    "yq-go@4.44.5"
   ],
   "shell": {
     "init_hook": [

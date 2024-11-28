@@ -4,10 +4,13 @@ source scripts/kubernetes.nu
 source scripts/crossplane.nu
 source scripts/get-hyperscaler.nu
 source scripts/ingress.nu
+source scripts/github.nu
 
 rm --force .env
 
 let hyperscaler = get-hyperscaler
+
+let github_data = get_github_auth
 
 create_kubernetes kind
 
@@ -17,10 +20,13 @@ kubectl create namespace a-team
 
 apply_crossplane $hyperscaler false true
 
+cp $"crossplane/($hyperscaler)-sql.yaml" apps/silly-demo-db.yaml
 
+cp crossplane/app.yaml apps/silly-demo.yaml
 
-
-
+open apps/silly-demo.yaml
+    | upsert spec.parameters.image $"ghcr.io/($github_data.user)/idp-full-demo:FIXME:"
+    | save apps/silly-demo.yaml --force
 
 
 # GITHUB_NAME=$(gh repo view --json nameWithOwner \

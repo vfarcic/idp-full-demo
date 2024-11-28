@@ -1,0 +1,46 @@
+name: ci
+run-name: ci
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build-container-image:
+    runs-on: ubuntu-latest
+    env:
+      TAG: 0.0.${{ github.run_number }}
+      FORCE_COLOR: 1
+      REGISTRY: ghcr.io/vfarcic
+      USER: vfarcic
+
+    steps:
+      - uses: earthly/actions-setup@v1
+        with:
+          version: v0.8.0
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Login to ghcr
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: vfarcic
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Build and push
+        run: |
+          earthly --push --secret password="$REGISTRY_PASSWORD" \
+            +all --tag $TAG --registry $REGISTRY --user $USER
+        env:
+          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Commit changes
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          git commit -m "Release ${{ env.TAG }} [skip ci]"
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
