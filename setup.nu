@@ -28,6 +28,8 @@ open apps/silly-demo.yaml
     | upsert spec.parameters.image $"ghcr.io/($github_data.user)/idp-full-demo:FIXME:"
     | save apps/silly-demo.yaml --force
 
+gh secret set REGISTRY_PASSWORD -b$github_data.token
+
 
 # GITHUB_NAME=$(gh repo view --json nameWithOwner \
 #     --jq .nameWithOwner)
