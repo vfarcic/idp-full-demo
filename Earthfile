@@ -30,7 +30,7 @@ image:
 gitops:
     ARG --required tag
     COPY apps apps
-    RUN yq --inplace ".spec.parameters.image = \"$registry/$user/$image:$tag\"" apps/silly-demo.yaml
+    RUN yq --inplace ".spec.parameters.image = \"$registry/$image:$tag\"" apps/silly-demo.yaml
     SAVE ARTIFACT apps/silly-demo.yaml AS LOCAL apps/silly-demo.yaml
 
 all:
