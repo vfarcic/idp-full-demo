@@ -25,12 +25,13 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: vfarcic
+          username: ${{ env.REGISTRY }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
       - name: Build and push
         run: |
           earthly --push --secret password="$REGISTRY_PASSWORD" \
-            +all --tag $TAG --registry $REGISTRY --user $USER
+            +all --tag ${{ env.TAG}} \
+            --registry ${{ env.REGISTRY }} --user ${{ env.USER }}
         env:
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
       - name: Commit changes
