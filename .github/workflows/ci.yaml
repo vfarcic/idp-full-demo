@@ -14,9 +14,6 @@ jobs:
       USER: vfarcic
 
     steps:
-      - uses: earthly/actions-setup@v1
-        with:
-          version: v0.8.0
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set up QEMU
@@ -27,11 +24,13 @@ jobs:
           registry: ghcr.io
           username: ${{ env.REGISTRY }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
-      - name: Build and push
+      - name: Install devbox
+        uses: jetify-com/devbox-install-action@v0.11.0
+        with:
+          project-path: devbox-ci.json
+      - name: Everything
         run: |
-          earthly --push --secret password="$REGISTRY_PASSWORD" \
-            +all --tag ${{ env.TAG}} \
-            --registry ${{ env.REGISTRY }} --user ${{ env.USER }}
+          devbox run --config devbox-ci.json -- ./cli run ci $TAG
         env:
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
       - name: Commit changes

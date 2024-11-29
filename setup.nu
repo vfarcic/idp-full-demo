@@ -7,6 +7,7 @@ source scripts/ingress.nu
 source scripts/github.nu
 source scripts/kyverno.nu
 source scripts/argocd.nu
+source scripts/port.nu
 
 rm --force .env
 

@@ -64,7 +64,7 @@ Press any key to continue.
 def delete_port [] {
 
     print $"
-Delete all items from the (ansi yellow_bold)Catalog(ansi reset), (ansi yellow_bold)Self-service(ansi reset), and (ansi yellow_bold)Builder > Data sources(ansi reset) pages in Port's Web UI.
+Delete all items from the (ansi yellow_bold)Catalog(ansi reset), (ansi yellow_bold)Self-service(ansi reset), and (ansi yellow_bold)Builder > Data model(ansi reset) pages in Port's Web UI.
 Press any key to continue.
 "
     input

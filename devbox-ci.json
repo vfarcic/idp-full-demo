@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.13.6/.schema/devbox.schema.json",
+  "packages": [
+    "nushell@0.100.0"
+  ],
+  "shell": {
+    "init_hook": [
+      "chmod +x cli"
+    ],
+    "scripts": {}
+  }
+}
