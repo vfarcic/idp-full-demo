@@ -30,7 +30,7 @@ jobs:
           project-path: devbox-ci.json
       - name: Everything
         run: |
-          devbox run --config devbox-ci.json -- ./cli run ci $TAG
+          devbox run --config devbox-ci.json -- ./cli run ci $TAG --registry $REGISTRY
         env:
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
       - name: Commit changes

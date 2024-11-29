@@ -6,7 +6,7 @@ def main [] {}
 def "main build image" [
     tag: string                    # The tag of the image (e.g., 0.0.1)
     --registry = "ghcr.io/vfarcic" # Image registry
-    --image = "silly-demo"         # Image name
+    --image = "idp-demo-full"      # Image name
     --push = true                  # Whether to push the image to the registry
 ] {
 
@@ -24,22 +24,38 @@ def "main build image" [
 }
 
 # Exeuctes tests
-def "main test run" [] {
+def "main run unit-tests" [] {
 
-    print "Faking execution of tests..."
+    print "Faking execution of unit-tests..."
 
 }
+
+# Exeuctes tests
+def "main update gitops" [
+    tag: string                    # The tag of the image (e.g., 0.0.1)
+    --registry = "ghcr.io/vfarcic" # Image registry
+    --image = "idp-demo-full"      # Image name
+] {
+
+    open apps/silly-demo.yaml |
+        | spec.parameters.image $"($registry)/($image):($tag)"
+        | save apps/silly-demo.yaml --force
+
+}
+
 
 
 # Runs all CI tasks
 def "main run ci" [
     tag: string                    # The tag of the image (e.g., 0.0.1)
     --registry = "ghcr.io/vfarcic" # Image registry
-    --image = "silly-demo"         # Image name
+    --image = "idp-demo-full"      # Image name
 ] {
 
-    main build image $tag
+    main run unit-tests
 
-    main test run
+    main build image $tag --registry $registry --image $image
+
+    main update gitops $tag --registry $registry --image $image
 
 }
