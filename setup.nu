@@ -26,6 +26,8 @@ apply_argocd "argocd.127.0.0.1.nip.io" false "nginx"
 
 apply_crossplane $hyperscaler false true
 
+apply_port $github_data.user
+
 cp $"crossplane/($hyperscaler)-sql.yaml" apps/silly-demo-db.yaml
 
 cp crossplane/app.yaml apps/silly-demo.yaml

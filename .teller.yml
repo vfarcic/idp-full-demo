@@ -8,3 +8,5 @@ providers:
         keys:
           github-user: GITHUB_USER
           github-token: GITHUB_TOKEN
+          port-client-id: PORT_CLIENT_ID
+          port-client-secret: PORT_CLIENT_SECRET
