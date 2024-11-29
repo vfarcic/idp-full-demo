@@ -6,7 +6,7 @@ def main [] {}
 def "main build image" [
     tag: string                    # The tag of the image (e.g., 0.0.1)
     --registry = "ghcr.io/vfarcic" # Image registry
-    --image = "idp-demo-full"      # Image name
+    --image = "idp-full-demo"      # Image name
     --push = true                  # Whether to push the image to the registry
 ] {
 
@@ -34,7 +34,7 @@ def "main run unit-tests" [] {
 def "main update gitops" [
     tag: string                    # The tag of the image (e.g., 0.0.1)
     --registry = "ghcr.io/vfarcic" # Image registry
-    --image = "idp-demo-full"      # Image name
+    --image = "idp-full-demo"      # Image name
 ] {
 
     open apps/silly-demo.yaml |
@@ -49,7 +49,7 @@ def "main update gitops" [
 def "main run ci" [
     tag: string                    # The tag of the image (e.g., 0.0.1)
     --registry = "ghcr.io/vfarcic" # Image registry
-    --image = "idp-demo-full"      # Image name
+    --image = "idp-full-demo"      # Image name
 ] {
 
     main run unit-tests
