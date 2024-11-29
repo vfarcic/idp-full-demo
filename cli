@@ -38,7 +38,7 @@ def "main update gitops" [
 ] {
 
     open apps/silly-demo.yaml |
-        | spec.parameters.image $"($registry)/($image):($tag)"
+        | upsert spec.parameters.image $"($registry)/($image):($tag)"
         | save apps/silly-demo.yaml --force
 
 }
