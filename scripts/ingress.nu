@@ -1,6 +1,6 @@
 #!/usr/bin/env nu
 
-def apply_ingress [provider: string, type = "traefik", env_prefix = ""] {
+def "main apply ingress" [provider: string, type = "traefik", env_prefix = ""] {
 
     if $type == "traefik" {
 
@@ -50,11 +50,11 @@ def apply_ingress [provider: string, type = "traefik", env_prefix = ""] {
 
     }
 
-    get_ingress_data $provider $type $env_prefix
+    main get ingress $provider $type $env_prefix
 
 }
 
-def get_ingress_data [provider: string, type = "traefik", env_prefix = ""] {
+def "main get ingress" [provider: string, type = "traefik", env_prefix = ""] {
 
     sleep 30sec
     

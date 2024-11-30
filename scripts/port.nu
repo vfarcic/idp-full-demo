@@ -1,6 +1,6 @@
 #!/usr/bin/env nu
 
-def apply_port [github_user: string] {
+def "main apply port" [github_user: string] {
 
     start "https://getport.io"
     
@@ -61,7 +61,7 @@ Press any key to continue.
 
 }
 
-def delete_port [] {
+def "main delete port" [] {
 
     print $"
 Delete all items from the (ansi yellow_bold)Catalog(ansi reset), (ansi yellow_bold)Self-service(ansi reset), and (ansi yellow_bold)Builder > Data model(ansi reset) pages in Port's Web UI.

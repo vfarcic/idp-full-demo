@@ -1,6 +1,6 @@
 #!/usr/bin/env nu
 
-def --env create_kubernetes [provider: string, name = "dot", min_nodes = 2, max_nodes = 4, auth = true] {
+def --env "main create kubernetes" [provider: string, name = "dot", min_nodes = 2, max_nodes = 4, auth = true] {
 
     $env.KUBECONFIG = $"($env.PWD)/kubeconfig-($name).yaml"
     $"export KUBECONFIG=($env.KUBECONFIG)\n" | save --append .env
@@ -144,7 +144,7 @@ aws_secret_access_key = ($aws_secret_access_key)
 
 }
 
-def destroy_kubernetes [provider: string, name = "dot", delete_project = true] {
+def "main destroy kubernetes" [provider: string, name = "dot", delete_project = true] {
 
     if $provider == "google" {
 

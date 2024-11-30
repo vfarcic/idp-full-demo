@@ -1,6 +1,6 @@
 #!/usr/bin/env nu
 
-def --env get_github_auth [] {
+def --env "main get github" [] {
 
     mut github_token = ""
     if "GITHUB_TOKEN" not-in $env {

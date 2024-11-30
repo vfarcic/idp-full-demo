@@ -1,6 +1,6 @@
 #!/usr/bin/env nu
 
-def apply_argocd [host_name = "", apply_apps = true, ingress_class_name = "traefik"] {
+def "main apply argocd" [host_name = "", apply_apps = true, ingress_class_name = "traefik"] {
 
     let git_url = git config --get remote.origin.url
 

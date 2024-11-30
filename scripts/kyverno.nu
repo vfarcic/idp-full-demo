@@ -1,6 +1,6 @@
 #!/usr/bin/env nu
 
-def apply_kyverno [] {
+def "main apply kyverno" [] {
 
     helm repo add kyverno https://kyverno.github.io/kyverno
 

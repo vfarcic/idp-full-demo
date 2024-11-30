@@ -14,12 +14,9 @@
   ],
   "shell": {
     "init_hook": [
-      "echo 'Welcome to devbox!' > /dev/null"
+      "chmod +x platform",
+      "export PATH=$PATH:$PWD"
     ],
-    "scripts": {
-      "test": [
-        "echo \"Error: no test specified\" && exit 1"
-      ]
-    }
+    "scripts": {}
   }
 }

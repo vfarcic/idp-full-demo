@@ -1,6 +1,6 @@
 #!/usr/bin/env nu
 
-def apply_crossplane [hyperscaler = none, app = false, db = false] {
+def "main apply crossplane" [hyperscaler = none, app = false, db = false] {
 
     mut project_id = ""
 
@@ -126,7 +126,7 @@ Press any key to continue.
 
 }
 
-def delete_crossplane [hyperscaler = none] {
+def "main delete crossplane" [hyperscaler = none] {
 
     if $hyperscaler == "google" {
 
