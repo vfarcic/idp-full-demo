@@ -1,6 +1,10 @@
 #!/usr/bin/env nu
 
-def "main apply crossplane" [hyperscaler = none, app = false, db = false] {
+def "main apply crossplane" [
+    --hyperscaler = none,
+    --app = false,
+    --db = false
+] {
 
     mut project_id = ""
 

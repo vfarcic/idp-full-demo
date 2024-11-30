@@ -33,7 +33,7 @@ def "main build image" [
 
 }
 
-# Exeuctes tests
+# Executes tests
 def "main run unit-tests" [] {
 
     print "Faking execution of unit-tests..."
@@ -68,8 +68,8 @@ def "main run ci" [
 
 }
 
-# Sets up the demo
-def "main setup demo" [] {
+# Sets up the complete demo
+def "main setup all" [] {
     
     rm --force .env
 
@@ -89,7 +89,7 @@ def "main setup demo" [] {
 
     main apply argocd "argocd.127.0.0.1.nip.io" false "nginx"
 
-    main apply crossplane $hyperscaler false true
+    main apply crossplane --hyperscaler $hyperscaler --db true
 
     cp $"crossplane/($hyperscaler)-sql.yaml" apps/silly-demo-db.yaml
 
@@ -119,13 +119,39 @@ def "main setup demo" [] {
 
 }
 
-# Destroys the demo
-def "main destroy demo" [] {
+# Sets up the CLIs demo
+def "main setup clis" [] {
+    
+    rm --force .env
+
+    main create kubernetes kind
+
+    main apply ingress kind nginx
+
+    main apply crossplane --app true
+
+    kubectl create namespace a-team
+    
+    kubectl --namespace a-team apply --filename crossplane/app-solo.yaml
+
+}
+
+# Destroys the complete demo
+def "main destroy all" [] {
+
+    rm apps/*.yaml
 
     main delete crossplane $env.HYPERSCALER
 
     main destroy kubernetes kind
 
     main delete port
+    
+}
+
+# Destroys the CLIs demo
+def "main destroy clis" [] {
+
+    main destroy kubernetes kind
     
 }
