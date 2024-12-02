@@ -48,8 +48,8 @@ def "main update gitops" [
     --source_path = apps/silly-demo.yaml # Source path 
 ] {
 
-    open  |
-        | upsert $source_path $"($registry)/($image):($tag)"
+    open $source_path |
+        | upsert spec.parameters.image $"($registry)/($image):($tag)"
         | save $source_path --force
 
 }
