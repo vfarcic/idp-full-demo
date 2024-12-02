@@ -42,14 +42,15 @@ def "main run unit-tests" [] {
 
 # Executes tests
 def "main update gitops" [
-    tag: string                    # The tag of the image (e.g., 0.0.1)
-    --registry = "ghcr.io/vfarcic" # Image registry
-    --image = "idp-full-demo"      # Image name
+    tag: string                          # The tag of the image (e.g., 0.0.1)
+    --registry = "ghcr.io/vfarcic"       # Image registry
+    --image = "idp-full-demo"            # Image name
+    --source_path = apps/silly-demo.yaml # Source path 
 ] {
 
-    open apps/silly-demo.yaml |
-        | upsert spec.parameters.image $"($registry)/($image):($tag)"
-        | save apps/silly-demo.yaml --force
+    open  |
+        | upsert $source_path $"($registry)/($image):($tag)"
+        | save $source_path --force
 
 }
 
