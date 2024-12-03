@@ -18,3 +18,8 @@ spec:
     ingressClassName: nginx
     db:
       secret: silly-demo-db
+    repository:
+      enabled: true
+      name: idp-full-app
+    ci:
+      enabled: true

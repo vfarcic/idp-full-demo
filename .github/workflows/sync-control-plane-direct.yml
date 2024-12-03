@@ -45,7 +45,7 @@ jobs:
           echo '${{ inputs.manifest }}' | yq -p json -o yaml | tee tmp.yaml
           kind=$(yq .kind tmp.yaml)
           name=$(yq .metadata.name tmp.yaml)
-          namespace=$(yq .metadata.namespace tmp.yaml)
+          namespace=$(yq .spec.parameters.namespace tmp.yaml)
           path=${{ inputs.folder }}/$namespace-$kind-$name.yaml
           if [ "${{ inputs.operation }}" = "DELETE" ]; then
             rm -f $path

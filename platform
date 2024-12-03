@@ -140,7 +140,7 @@ def "main setup clis" [] {
 # Destroys the complete demo
 def "main destroy all" [] {
 
-    rm apps/*.yaml
+    rm --force apps/*.yaml
 
     main delete crossplane $env.HYPERSCALER
 
