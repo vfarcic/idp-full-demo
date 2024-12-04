@@ -3,7 +3,9 @@
 def "main apply crossplane" [
     --hyperscaler = none,
     --app = false,
-    --db = false
+    --db = false,
+    --github_user: string, # GitHub user
+    --github_token: string, # GitHub token
 ] {
 
     mut project_id = ""
@@ -75,6 +77,7 @@ Press any key to continue.
             kubectl apply
                 --filename crossplane/config-dot-application.yaml
         )
+
     }
 
     if $db {
@@ -124,6 +127,49 @@ Press any key to continue.
             | save crossplane/provider-config-google.yaml --force
 
         kubectl apply --filename crossplane/provider-config-google.yaml
+
+    }
+
+    if ($github_user | is-not-empty) and ($github_token | is-not-empty) {
+
+        {
+            apiVersion: v1,
+            kind: Secret,
+            metadata: {
+                name: github,
+                namespace: crossplane-system
+            },
+            type: Opaque,
+            stringData: {
+                credentials: $"{\"token\":\"($github_token)\",\"owner\":\"($github_user)\"}"
+            }
+        }
+            | to yaml
+            | kubectl --namespace crossplane-system apply --filename -
+
+        if $app {
+
+            {
+                apiVersion: "github.upbound.io/v1beta1",
+                kind: ProviderConfig,
+                metadata: {
+                    name: default
+                },
+                spec: {
+                    credentials: {
+                        secretRef: {
+                            key: credentials,
+                            name: github,
+                            namespace: crossplane-system,
+                        },
+                        source: Secret
+                    }
+                }
+            }
+                | to yaml
+                | kubectl apply --filename -
+
+        }
 
     }
 

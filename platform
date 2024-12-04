@@ -90,7 +90,12 @@ def "main setup all" [] {
 
     main apply argocd "argocd.127.0.0.1.nip.io" false "nginx"
 
-    main apply crossplane --hyperscaler $hyperscaler --db true
+    (
+        main apply crossplane
+            --hyperscaler $hyperscaler --db true --app true
+            --github_user $github_data.user
+            --github_token $github_data.token
+    )
 
     cp $"crossplane/($hyperscaler)-sql.yaml" apps/silly-demo-db.yaml
 
@@ -117,6 +122,24 @@ def "main setup all" [] {
     Press any key to continue.
     "
     input
+
+    gh repo create $"($github_data.user)/idp-full-app" --public
+
+    gh repo clone $"($github_data.user)/idp-full-app"
+
+    cd idp-full-app
+
+    touch README.md
+
+    git add .
+
+    git commit -m "README"
+
+    git push
+
+    cd ..
+
+    rm -rf idp-full-app
 
 }
 
