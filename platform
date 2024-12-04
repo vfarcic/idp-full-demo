@@ -176,6 +176,8 @@ def "main destroy all" [] {
 # Destroys the CLIs demo
 def "main destroy clis" [] {
 
+    gh repo delete $"($env.GITHUB_USER))/idp-full-app"
+
     main destroy kubernetes kind
     
 }
