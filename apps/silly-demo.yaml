@@ -12,8 +12,8 @@ spec:
       location: local
   parameters:
     namespace: a-team
-    image: ghcr.io/vfarcic/idp-full-demo:0.0.17
-    tag: FIXME
+    image: ghcr.io/vfarcic/idp-full-demo
+    tag: "0.0.17"
     port: 8080
     host: silly-demo.127.0.0.1.nip.io
     ingressClassName: nginx
@@ -24,3 +24,6 @@ spec:
       name: idp-full-app
     ci:
       enabled: true
+    scaling:
+      enabled: true
+      min: 2
