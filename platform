@@ -97,22 +97,12 @@ def "main setup all" [] {
             --github_token $github_data.token
     )
 
-    cp $"crossplane/($hyperscaler)-sql.yaml" apps/silly-demo-db.yaml
-
-    cp crossplane/app.yaml apps/silly-demo.yaml
-
-    open apps/silly-demo.yaml
-        | upsert spec.parameters.image $"ghcr.io/($github_data.user)/idp-full-demo:FIXME:"
-        | save apps/silly-demo.yaml --force
-
     (
         docker login
             --username $github_data.user
             --password $github_data.token
             $"ghcr.io/($github_data.user)"
     )
-
-    gh secret set REGISTRY_PASSWORD $"-b($github_data.token)"
 
     start $"https://github.com/($github_data.user)/idp-full-demo/settings/actions"
 
@@ -123,23 +113,38 @@ def "main setup all" [] {
     "
     input
 
-    gh repo create $"($github_data.user)/idp-full-app" --public
-
-    gh repo clone $"($github_data.user)/idp-full-app"
+    gh repo create $"($github_data.user)/idp-full-app" --public --clone
 
     cd idp-full-app
 
-    touch README.md
+    (
+        gh secret set REGISTRY_PASSWORD --body $github_data.token
+            --repo $"($github_data.user)/idp-full-app"
+    )
+
+    cp ../go.* .
+
+    cp ../*.go .
+
+    cp --recursive ../vendor .
+
+    mkdir apps
+
+    cp $"../crossplane/($hyperscaler)-sql.yaml" apps/silly-demo-db.yaml
+
+    cp ../crossplane/app.yaml apps/silly-demo.yaml
+
+    open apps/silly-demo.yaml
+        | upsert spec.parameters.image $"ghcr.io/($github_data.user)/idp-full-demo"
+        | save apps/silly-demo.yaml --force
 
     git add .
 
-    git commit -m "README"
+    git commit -m "Initial commit"
 
     git push
 
     cd ..
-
-    rm -rf idp-full-app
 
 }
 
@@ -162,6 +167,10 @@ def "main setup clis" [] {
 
 # Destroys the complete demo
 def "main destroy all" [] {
+
+    rm --force --recursive idp-full-app
+
+    gh repo delete $"($env.GITHUB_USER)/idp-full-app"
 
     rm --force apps/*.yaml
 
