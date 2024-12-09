@@ -104,15 +104,6 @@ def "main setup all" [] {
             $"ghcr.io/($github_data.user)"
     )
 
-    start $"https://github.com/($github_data.user)/idp-full-demo/settings/actions"
-
-    print $"
-    Select (ansi yellow_bold)Read and write permissions(ansi reset) in the (ansi yellow_bold)Workflow permissions(ansi reset) section.
-    Click the (ansi yellow_bold)Save(ansi reset) button.
-    Press any key to continue.
-    "
-    input
-
     gh repo create $"($github_data.user)/idp-full-app" --public --clone
 
     cd idp-full-app
@@ -136,15 +127,27 @@ def "main setup all" [] {
 
     open apps/silly-demo.yaml
         | upsert spec.parameters.image $"ghcr.io/($github_data.user)/idp-full-demo"
+        | upsert spec.parameters.tag "FIXME"
         | save apps/silly-demo.yaml --force
 
     git add .
 
     git commit -m "Initial commit"
 
-    git push
+    git push --set-upstream origin main
+
+    start $"https://github.com/($github_data.user)/idp-full-app/settings/actions"
+
+    print $"
+    Select (ansi yellow_bold)Read and write permissions(ansi reset) in the (ansi yellow_bold)Workflow permissions(ansi reset) section.
+    Click the (ansi yellow_bold)Save(ansi reset) button.
+    Press any key to continue.
+    "
+    input
 
     cd ..
+
+    rm -rf idp-full-app
 
 }
 
