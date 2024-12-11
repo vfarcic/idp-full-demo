@@ -119,16 +119,27 @@ def "main setup all" [] {
 
     cp --recursive ../vendor .
 
+    cp ../argocd-apps.yaml .
+
     mkdir apps
 
     cp $"../crossplane/($hyperscaler)-sql.yaml" apps/silly-demo-db.yaml
 
     cp ../crossplane/app.yaml apps/silly-demo.yaml
 
+    (
+        cp ../.github/workflows/sync-control-plane-direct.yml
+            .github/workflows/sync-control-plane-direct.yml
+    )
+
     open apps/silly-demo.yaml
         | upsert spec.parameters.image $"ghcr.io/($github_data.user)/idp-full-demo"
         | upsert spec.parameters.tag "FIXME"
         | save apps/silly-demo.yaml --force
+
+    open argocd-apps.yaml
+        | upsert spec.source.repoURL $"https://github.com/($github_data.user)/idp-full-demo"
+        | save argocd-apps.yaml --force
 
     git add .
 
@@ -193,3 +204,41 @@ def "main destroy clis" [] {
     main destroy kubernetes kind
     
 }
+
+def "main get resource types" [] {
+
+    (
+        kubectl api-resources
+            --api-group devopstoolkitseries.com
+            --namespaced --output name
+    )
+        | detect columns --no-headers
+        | rename name
+        | str replace --all --regex '.devopstoolkitseries.com' '' name
+
+}
+
+def "main get resources" [
+    resource: string
+    --namespace = "default"
+] {
+
+    kubectl --namespace $namespace get $resource
+
+}
+
+def "main describe resource" [
+    resource: string
+    name: string
+    --namespace = "default"
+] {
+
+    kubectl --namespace $namespace describe $resource $name
+
+    print ""
+    print ""
+
+    crossplane beta trace --namespace $namespace $resource $name
+
+}
+
