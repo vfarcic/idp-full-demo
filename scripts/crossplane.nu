@@ -79,7 +79,7 @@ Press any key to continue.
             apiVersion: "pkg.crossplane.io/v1"
             kind: "Configuration"
             metadata: { name: "crossplane-app" }
-            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-application:v0.6.30" }
+            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-application:v0.6.31" }
         } | to yaml | kubectl apply --filename -
 
     }
@@ -247,8 +247,7 @@ Press any key to continue.
             stringData: {
                 credentials: $"{\"token\":\"($github_token)\",\"owner\":\"($github_user)\"}"
             }
-        }
-            | to yaml | kubectl --filename -
+        } | to yaml | kubectl apply --filename -
 
         if $app or $github {
 

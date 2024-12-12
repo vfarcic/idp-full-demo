@@ -92,7 +92,8 @@ def "main setup all" [] {
 
     (
         main apply crossplane
-            --hyperscaler $hyperscaler --db true --app true
+            --hyperscaler $hyperscaler
+            --db true --app true --github true
             --github_user $github_data.user
             --github_token $github_data.token
     )
@@ -105,25 +106,14 @@ def "main setup all" [] {
     )
 
     # (
-    #     gh secret set REGISTRY_PASSWORD --body $github_data.token
-    #         --repo $"($github_data.user)/idp-full-app"
-    # )
-
-    # cp ../argocd-apps.yaml .
-
-    # cp $"../crossplane/($hyperscaler)-sql.yaml" apps/silly-demo-db.yaml
-
-    # cp ../crossplane/app.yaml apps/silly-demo.yaml
-
-    # (
     #     cp ../.github/workflows/sync-control-plane-direct.yml
     #         .github/workflows/sync-control-plane-direct.yml
     # )
 
-    # open apps/silly-demo.yaml
-    #     | upsert spec.parameters.image $"ghcr.io/($github_data.user)/idp-full-app"
-    #     | upsert spec.parameters.tag "FIXME"
-    #     | save apps/silly-demo.yaml --force
+    open ../crossplane/app.yaml
+        | upsert spec.parameters.image $"ghcr.io/($github_data.user)/idp-full-app"
+        | upsert spec.parameters.tag "FIXME"
+        | save ../crossplane/app.yaml --force
 
     # open argocd-apps.yaml
     #     | upsert spec.source.repoURL $"https://github.com/($github_data.user)/idp-full-app"
@@ -134,15 +124,6 @@ def "main setup all" [] {
     # git commit -m "Initial commit"
 
     # git push --set-upstream origin main
-
-    # start $"https://github.com/($github_data.user)/idp-full-app/settings/actions"
-
-    # print $"
-    # Select (ansi yellow_bold)Read and write permissions(ansi reset) in the (ansi yellow_bold)Workflow permissions(ansi reset) section.
-    # Click the (ansi yellow_bold)Save(ansi reset) button.
-    # Press any key to continue.
-    # "
-    # input
 
     # cd ..
 
