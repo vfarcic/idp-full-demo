@@ -1,0 +1,11 @@
+---
+apiVersion: devopstoolkit.live/v1alpha1
+kind: GitHubClaim
+metadata:
+  name: idp-full-app
+spec:
+  id: idp-full-app
+  parameters:
+    public: true
+    app:
+      language: go

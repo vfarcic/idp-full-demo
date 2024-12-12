@@ -1,11 +1,12 @@
 #!/usr/bin/env nu
 
 def "main apply crossplane" [
-    --hyperscaler = none,
-    --app = false,
-    --db = false,
-    --github_user: string, # GitHub user
-    --github_token: string, # GitHub token
+    --hyperscaler = none,   # Which hyperscaler to use. Available options are `none`, `google`, `aws`, and `azure`
+    --app = false,          # Whether to apply DOT App Configuration
+    --db = false,           # Whether to apply DOT SQL Configuration
+    --github = false,       # Whether to apply DOT GitHub Configuration
+    --github_user: string,  # GitHub user required for the DOT GitHub Configuration and optinal for the DOT App Configuration
+    --github_token: string, # GitHub token required for the DOT GitHub Configuration and optinal for the DOT App Configuration
 ] {
 
     mut project_id = ""
@@ -73,10 +74,13 @@ Press any key to continue.
     }
 
     if $app {
-        (
-            kubectl apply
-                --filename crossplane/config-dot-application.yaml
-        )
+
+        {
+            apiVersion: "pkg.crossplane.io/v1"
+            kind: "Configuration"
+            metadata: { name: "crossplane-app" }
+            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-application:v0.6.30" }
+        } | to yaml | kubectl apply --filename -
 
     }
 
@@ -94,21 +98,110 @@ Press any key to continue.
 
         }
 
-        (
-            kubectl apply
-                --filename crossplane/config-dot-sql.yaml
-        )
+        {
+            apiVersion: "pkg.crossplane.io/v1"
+            kind: "Configuration"
+            metadata: { name: "crossplane-sql" }
+            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-sql:v0.8.161" }
+        } | to yaml | kubectl apply --filename -
+
     }
 
-    (
-        kubectl apply
-            --filename crossplane/provider-helm-incluster.yaml
-    )
+    if $github {
 
-    (
-        kubectl apply
-            --filename crossplane/provider-kubernetes-incluster.yaml
-    )
+        {
+            apiVersion: "pkg.crossplane.io/v1"
+            kind: "Configuration"
+            metadata: { name: "devops-toolkit-dot-github" }
+            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-github:v0.0.55" }
+        } | to yaml | kubectl apply --filename -
+
+    }
+
+    {
+        apiVersion: "v1"
+        kind: "ServiceAccount"
+        metadata: {
+            name: "crossplane-provider-helm"
+            namespace: "crossplane-system"
+        }
+    } | to yaml | kubectl apply --filename -
+    
+    {
+        apiVersion: "rbac.authorization.k8s.io/v1"
+        kind: "ClusterRoleBinding"
+        metadata: {  name: crossplane-provider-helm }
+        subjects: [{
+            kind: "ServiceAccount"
+            name: "crossplane-provider-helm"
+            namespace: "crossplane-system"
+        }]
+        roleRef: {
+            kind: "ClusterRole"
+            name: "cluster-admin"
+            apiGroup: "rbac.authorization.k8s.io"
+        }
+    } | to yaml | kubectl apply --filename -
+
+    {
+        apiVersion: "pkg.crossplane.io/v1alpha1"
+        kind: "ControllerConfig"
+        metadata: { name: "crossplane-provider-helm" }
+        spec: { serviceAccountName: "crossplane-provider-helm" }
+    } | to yaml | kubectl apply --filename -
+
+    {
+        apiVersion: "pkg.crossplane.io/v1"
+        kind: "Provider"
+        metadata: { name: "crossplane-provider-helm" }
+        spec: {
+            package: "xpkg.upbound.io/crossplane-contrib/provider-helm:v0.19.0"
+            controllerConfigRef: { name: "crossplane-provider-helm" }
+        }
+    } | to yaml | kubectl apply --filename -
+
+    {
+        apiVersion: "v1"
+        kind: "ServiceAccount"
+        metadata: {
+            name: "crossplane-provider-kubernetes"
+            namespace: "crossplane-system"
+        }
+    } | to yaml | kubectl apply --filename -
+
+    {
+        apiVersion: "rbac.authorization.k8s.io/v1"
+        kind: "ClusterRoleBinding"
+        metadata: { name: "crossplane-provider-kubernetes" }
+        subjects: [{
+            kind: "ServiceAccount"
+            name: "crossplane-provider-kubernetes"
+            namespace: "crossplane-system"
+        }]
+        roleRef: {
+            kind: "ClusterRole"
+            name: "cluster-admin"
+            apiGroup: "rbac.authorization.k8s.io"
+        }
+    } | to yaml | kubectl apply --filename -
+
+    {
+        apiVersion: "pkg.crossplane.io/v1alpha1"
+        kind: "ControllerConfig"
+        metadata: { name: "crossplane-provider-kubernetes" }
+        spec: { serviceAccountName: "crossplane-provider-kubernetes" }
+    } | to yaml | kubectl apply --filename -
+
+    {
+        apiVersion: "pkg.crossplane.io/v1"
+        kind: "Provider"
+        metadata: { name: "crossplane-provider-kubernetes" }
+        spec: {
+            package: "xpkg.upbound.io/crossplane-contrib/provider-kubernetes:v0.15.0"
+            controllerConfigRef: { name: "crossplane-provider-kubernetes" }
+        }
+    } | to yaml | kubectl apply --filename -
+
 
     print $"(ansi yellow_bold)Waiting for Crossplane providers to be deployed...(ansi reset)"
 
@@ -122,11 +215,22 @@ Press any key to continue.
 
     if $hyperscaler == "google" {
 
-        open crossplane/provider-config-google.yaml
-            | upsert spec.projectID $project_id
-            | save crossplane/provider-config-google.yaml --force
-
-        kubectl apply --filename crossplane/provider-config-google.yaml
+        {
+            apiVersion: "gcp.upbound.io/v1beta1"
+            kind: "ProviderConfig"
+            metadata: { name: "default" }
+            spec: {
+                projectID: $project_id
+                credentials: {
+                    source: "Secret"
+                    secretRef: {
+                        namespace: "crossplane-system"
+                        name: "gcp-creds"
+                        key: "creds"
+                    }
+                }
+            }
+        } | to yaml | kubectl apply --filename -
 
     }
 
@@ -144,10 +248,9 @@ Press any key to continue.
                 credentials: $"{\"token\":\"($github_token)\",\"owner\":\"($github_user)\"}"
             }
         }
-            | to yaml
-            | kubectl --namespace crossplane-system apply --filename -
+            | to yaml | kubectl --filename -
 
-        if $app {
+        if $app or $github {
 
             {
                 apiVersion: "github.upbound.io/v1beta1",
@@ -165,14 +268,11 @@ Press any key to continue.
                         source: Secret
                     }
                 }
-            }
-                | to yaml
-                | kubectl apply --filename -
+            } | to yaml | kubectl apply --filename -
 
         }
 
     }
-
 
 }
 

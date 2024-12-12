@@ -15,7 +15,7 @@ def main [] {}
 def "main build image" [
     tag: string                    # The tag of the image (e.g., 0.0.1)
     --registry = "ghcr.io/vfarcic" # Image registry
-    --image = "idp-full-demo"      # Image name
+    --image = "idp-full-app"       # Image name
     --push = true                  # Whether to push the image to the registry
 ] {
 
@@ -44,7 +44,7 @@ def "main run unit-tests" [] {
 def "main update gitops" [
     tag: string                          # The tag of the image (e.g., 0.0.1)
     --registry = "ghcr.io/vfarcic"       # Image registry
-    --image = "idp-full-demo"            # Image name
+    --image = "idp-full-app"            # Image name
     --source_path = apps/silly-demo.yaml # Source path 
 ] {
 
@@ -58,7 +58,7 @@ def "main update gitops" [
 def "main run ci" [
     tag: string                    # The tag of the image (e.g., 0.0.1)
     --registry = "ghcr.io/vfarcic" # Image registry
-    --image = "idp-full-demo"      # Image name
+    --image = "idp-full-app"      # Image name
 ] {
 
     main run unit-tests
@@ -82,7 +82,7 @@ def "main setup all" [] {
 
     main apply ingress kind nginx
 
-    main apply port $github_data.user
+    main apply port $github_data.user "idp-full-app"
 
     kubectl create namespace a-team
 
@@ -104,61 +104,49 @@ def "main setup all" [] {
             $"ghcr.io/($github_data.user)"
     )
 
-    gh repo create $"($github_data.user)/idp-full-app" --public --clone
+    # (
+    #     gh secret set REGISTRY_PASSWORD --body $github_data.token
+    #         --repo $"($github_data.user)/idp-full-app"
+    # )
 
-    cd idp-full-app
+    # cp ../argocd-apps.yaml .
 
-    (
-        gh secret set REGISTRY_PASSWORD --body $github_data.token
-            --repo $"($github_data.user)/idp-full-app"
-    )
+    # cp $"../crossplane/($hyperscaler)-sql.yaml" apps/silly-demo-db.yaml
 
-    cp ../go.* .
+    # cp ../crossplane/app.yaml apps/silly-demo.yaml
 
-    cp ../*.go .
+    # (
+    #     cp ../.github/workflows/sync-control-plane-direct.yml
+    #         .github/workflows/sync-control-plane-direct.yml
+    # )
 
-    cp --recursive ../vendor .
+    # open apps/silly-demo.yaml
+    #     | upsert spec.parameters.image $"ghcr.io/($github_data.user)/idp-full-app"
+    #     | upsert spec.parameters.tag "FIXME"
+    #     | save apps/silly-demo.yaml --force
 
-    cp ../argocd-apps.yaml .
+    # open argocd-apps.yaml
+    #     | upsert spec.source.repoURL $"https://github.com/($github_data.user)/idp-full-app"
+    #     | save argocd-apps.yaml --force
 
-    mkdir apps
+    # git add .
 
-    cp $"../crossplane/($hyperscaler)-sql.yaml" apps/silly-demo-db.yaml
+    # git commit -m "Initial commit"
 
-    cp ../crossplane/app.yaml apps/silly-demo.yaml
+    # git push --set-upstream origin main
 
-    (
-        cp ../.github/workflows/sync-control-plane-direct.yml
-            .github/workflows/sync-control-plane-direct.yml
-    )
+    # start $"https://github.com/($github_data.user)/idp-full-app/settings/actions"
 
-    open apps/silly-demo.yaml
-        | upsert spec.parameters.image $"ghcr.io/($github_data.user)/idp-full-demo"
-        | upsert spec.parameters.tag "FIXME"
-        | save apps/silly-demo.yaml --force
+    # print $"
+    # Select (ansi yellow_bold)Read and write permissions(ansi reset) in the (ansi yellow_bold)Workflow permissions(ansi reset) section.
+    # Click the (ansi yellow_bold)Save(ansi reset) button.
+    # Press any key to continue.
+    # "
+    # input
 
-    open argocd-apps.yaml
-        | upsert spec.source.repoURL $"https://github.com/($github_data.user)/idp-full-demo"
-        | save argocd-apps.yaml --force
+    # cd ..
 
-    git add .
-
-    git commit -m "Initial commit"
-
-    git push --set-upstream origin main
-
-    start $"https://github.com/($github_data.user)/idp-full-app/settings/actions"
-
-    print $"
-    Select (ansi yellow_bold)Read and write permissions(ansi reset) in the (ansi yellow_bold)Workflow permissions(ansi reset) section.
-    Click the (ansi yellow_bold)Save(ansi reset) button.
-    Press any key to continue.
-    "
-    input
-
-    cd ..
-
-    rm -rf idp-full-app
+    # rm -rf idp-full-app
 
 }
 
@@ -182,10 +170,6 @@ def "main setup clis" [] {
 # Destroys the complete demo
 def "main destroy all" [] {
 
-    rm --force --recursive idp-full-app
-
-    gh repo delete $"($env.GITHUB_USER)/idp-full-app"
-
     rm --force apps/*.yaml
 
     main delete crossplane $env.HYPERSCALER
@@ -193,6 +177,10 @@ def "main destroy all" [] {
     main destroy kubernetes kind
 
     main delete port
+
+    rm --force --recursive idp-full-app
+
+    gh repo delete $"($env.GITHUB_USER)/idp-full-app"
     
 }
 

@@ -1,6 +1,9 @@
 #!/usr/bin/env nu
 
-def "main apply port" [github_user: string] {
+def "main apply port" [
+    github_user: string
+    github_repo: string
+] {
 
     start "https://getport.io"
     
@@ -19,11 +22,6 @@ Press any key to continue.
     $"export PORT_CLIENT_ID=($port_client_id)\n"
         | save --append .env
 
-    (
-        gh secret set PORT_CLIENT_ID --body $port_client_id
-            --app actions --repos $"($github_user)/idp-full-demo"
-    )
-
     mut port_client_secret = ""
     if "PORT_CLIENT_ID" not-in $env {
         $port_client_secret = input $"(ansi green_bold)Enter Port Client Secret:(ansi reset)"
@@ -32,12 +30,6 @@ Press any key to continue.
     }
     $"export PORT_CLIENT_SECRET=($port_client_secret)\n"
         | save --append .env
-
-    (
-        gh secret set PORT_CLIENT_SECRET
-            --body $port_client_secret
-            --app actions --repos $"($github_user)/idp-full-demo"
-    )
 
     print $"
 Install (ansi green_bold)Port's GitHub app(ansi reset).
