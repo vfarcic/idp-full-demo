@@ -154,6 +154,30 @@ def "main setup apps" [] {
             --github_token $github_data.token
     )
 
+    if $hyperscaler == "azure" {
+
+        let date_suffix = (date now | format date "%Y%m%d%H%M%S")
+
+        open crossplane/azure-sql.yaml |
+            | upsert spec.id $"silly-demo-db-($date_suffix)"
+            | save crossplane/azure-sql.yaml --force
+
+        open crossplane/azure-sql-password.yaml |
+            | upsert metadata.name $"silly-demo-db-($date_suffix)-password"
+            | save crossplane/azure-sql-password.yaml --force
+
+        open crossplane/app.yaml |
+            | upsert spec.parameters.db.secret $"silly-demo-db-($date_suffix)"
+            | save crossplane/app.yaml --force
+
+    } else {
+
+        open crossplane/app.yaml |
+            | upsert spec.parameters.db.secret "silly-demo-db"
+            | save crossplane/app.yaml --force
+
+    }
+
 }
 
 # Sets up the CLIs demo
