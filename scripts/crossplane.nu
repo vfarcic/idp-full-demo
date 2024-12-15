@@ -79,7 +79,7 @@ Press any key to continue.
             apiVersion: "pkg.crossplane.io/v1"
             kind: "Configuration"
             metadata: { name: "crossplane-app" }
-            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-application:v0.6.31" }
+            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-application:v0.6.34" }
         } | to yaml | kubectl apply --filename -
 
     }
@@ -113,7 +113,7 @@ Press any key to continue.
             apiVersion: "pkg.crossplane.io/v1"
             kind: "Configuration"
             metadata: { name: "devops-toolkit-dot-github" }
-            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-github:v0.0.55" }
+            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-github:v0.0.56" }
         } | to yaml | kubectl apply --filename -
 
     }

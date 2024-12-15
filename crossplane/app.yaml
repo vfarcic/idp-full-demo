@@ -12,8 +12,8 @@ spec:
       location: local
   parameters:
     namespace: a-team
-    image: ghcr.io/vfarcic/idp-full-demo
-    tag: latest
+    image: ghcr.io/vfarcic/silly-demo
+    tag: 1.4.338
     port: 8080
     host: silly-demo.127.0.0.1.nip.io
     ingressClassName: nginx

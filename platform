@@ -110,10 +110,10 @@ def "main setup all" [] {
     #         .github/workflows/sync-control-plane-direct.yml
     # )
 
-    open ../crossplane/app.yaml
+    open .crossplane/app.yaml
         | upsert spec.parameters.image $"ghcr.io/($github_data.user)/idp-full-app"
         | upsert spec.parameters.tag "FIXME"
-        | save ../crossplane/app.yaml --force
+        | save crossplane/app.yaml --force
 
     # open argocd-apps.yaml
     #     | upsert spec.source.repoURL $"https://github.com/($github_data.user)/idp-full-app"
@@ -128,6 +128,36 @@ def "main setup all" [] {
     # cd ..
 
     # rm -rf idp-full-app
+
+}
+
+# Sets up the apps demo
+def "main setup apps" [] {
+    
+    rm --force .env
+
+    let hyperscaler = main get hyperscaler
+
+    let github_data = main get github
+
+    main create kubernetes kind
+
+    main apply ingress kind nginx
+
+    kubectl create namespace a-team
+
+    (
+        main apply crossplane
+            --hyperscaler $hyperscaler
+            --db true --app true --github true
+            --github_user $github_data.user
+            --github_token $github_data.token
+    )
+
+    open crossplane/app.yaml
+        | upsert spec.parameters.image $"ghcr.io/vfarcic/silly-demo"
+        | upsert spec.parameters.tag "1.4.338"
+        | save crossplane/app.yaml --force
 
 }
 
@@ -163,6 +193,21 @@ def "main destroy all" [] {
 
     gh repo delete $"($env.GITHUB_USER)/idp-full-app"
     
+}
+
+# Destroys up the apps demo
+def "main destroy apps" [] {
+
+    rm --force apps/*.yaml
+
+    main delete crossplane $env.HYPERSCALER
+
+    main destroy kubernetes kind
+
+    rm --force --recursive idp-full-app
+
+    gh repo delete $"($env.GITHUB_USER)/idp-full-app"
+
 }
 
 # Destroys the CLIs demo
