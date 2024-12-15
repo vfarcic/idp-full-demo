@@ -98,6 +98,25 @@ aws_secret_access_key = ($env.AWS_SECRET_ACCESS_KEY)
                 --from-file creds=./aws-creds.conf
         )
 
+    } else if $hyperscaler == "azure" {
+
+        mut azure_tenant = ""
+        if AZURE_TENANT not-in $env {
+            $azure_tenant = input $"(ansi green_bold)Enter Azure Tenant ID: (ansi reset)"
+        } else {
+            $azure_tenant = $env.AZURE_TENANT
+        }
+        $"export AZURE_TENANT=($azure_tenant)\n"
+            | save --append .env
+        
+        az login --tenant $azure_tenant
+    
+        let subscription_id = (az account show --query id -o tsv)
+    
+        az ad sp create-for-rbac --sdk-auth --role Owner \
+            --scopes $"/subscriptions/($subscription_id)" \
+            | save azure-creds.json --force
+
     }
 
     if $app {
@@ -277,6 +296,24 @@ Press any key to continue.
             }
         } | to yaml | kubectl apply --filename -
     
+    } else if $hyperscaler == "azure" {
+
+        {
+            apiVersion: "azure.upbound.io/v1beta1"
+            kind: "ProviderConfig"
+            metadata: { name: default }
+            spec: {
+                credentials: {
+                    source: "Secret"
+                    secretRef: {
+                        namespace: "crossplane-system"
+                        name: "azure-creds"
+                        key: "creds"
+                    }
+                }
+            }
+        } | to yaml | kubectl apply --filename -
+
     }
 
     if ($github_user | is-not-empty) and ($github_token | is-not-empty) {
