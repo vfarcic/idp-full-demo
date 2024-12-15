@@ -106,7 +106,7 @@ aws_secret_access_key = ($env.AWS_SECRET_ACCESS_KEY)
             apiVersion: "pkg.crossplane.io/v1"
             kind: "Configuration"
             metadata: { name: "crossplane-app" }
-            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-application:v0.6.34" }
+            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-application:v0.6.43" }
         } | to yaml | kubectl apply --filename -
 
     }
@@ -140,7 +140,7 @@ Press any key to continue.
             apiVersion: "pkg.crossplane.io/v1"
             kind: "Configuration"
             metadata: { name: "devops-toolkit-dot-github" }
-            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-github:v0.0.56" }
+            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-github:v0.0.57" }
         } | to yaml | kubectl apply --filename -
 
     }
@@ -320,14 +320,16 @@ Press any key to continue.
 
 }
 
-def "main delete crossplane" [hyperscaler = none] {
+def "main delete crossplane" [
+    waitForManaged = true
+] {
 
-    if $hyperscaler == "google" {
+    mut counter = (kubectl get managed | grep -v object | wc -l | into int)
 
-        let project_id = $env.PROJECT_ID
-
-        gcloud projects delete $project_id --quiet
-
+    while $counter > 0 {
+        print $"Waiting for remaining ($counter) managed resources to be removed..."
+        sleep 10sec
+        $counter = (kubectl get managed | grep -v object | wc -l | into int)
     }
 
 }

@@ -1,3 +1,4 @@
 /.env
 /kubeconfig*.yaml
 /gcp-creds.json
+/aws-creds.conf

@@ -154,11 +154,6 @@ def "main setup apps" [] {
             --github_token $github_data.token
     )
 
-    open crossplane/app.yaml
-        | upsert spec.parameters.image $"ghcr.io/vfarcic/silly-demo"
-        | upsert spec.parameters.tag "1.4.338"
-        | save crossplane/app.yaml --force
-
 }
 
 # Sets up the CLIs demo
@@ -198,9 +193,17 @@ def "main destroy all" [] {
 # Destroys up the apps demo
 def "main destroy apps" [] {
 
-    rm --force apps/*.yaml
+    kubectl --namespace a-team delete --filename crossplane/repo.yaml
+
+    kubectl --namespace a-team delete --filename idp-full-app/apps
 
     main delete crossplane $env.HYPERSCALER
+
+    if $env.HYPERSCALER == "google" {
+
+        gcloud projects delete $env.PROJECT_ID --quiet
+
+    }
 
     main destroy kubernetes kind
 
@@ -246,7 +249,7 @@ def "main describe resource" [
     name: string
     --namespace = "default"
 ] {
-
+    
     kubectl --namespace $namespace describe $resource $name
 
     print ""
