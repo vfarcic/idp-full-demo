@@ -10,3 +10,6 @@ providers:
           github-token: GITHUB_TOKEN
           port-client-id: PORT_CLIENT_ID
           port-client-secret: PORT_CLIENT_SECRET
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          aws-account-id: AWS_ACCOUNT_ID

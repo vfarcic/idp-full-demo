@@ -71,6 +71,33 @@ Press any key to continue.
 
         }
 
+    } else if $hyperscaler == "aws" {
+
+        if AWS_ACCESS_KEY_ID not-in $env {
+            let value = input $"(ansi green_bold)Enter AWS Access Key ID: (ansi reset)"
+            $env.AWS_ACCESS_KEY_ID = $value
+        }
+        $"export AWS_ACCESS_KEY_ID=($env.AWS_ACCESS_KEY_ID)\n"
+            | save --append .env
+
+        if AWS_SECRET_ACCESS_KEY not-in $env {
+            let value = input $"(ansi green_bold)Enter AWS Secret Access Key: (ansi reset)"
+            $env.AWS_SECRET_ACCESS_KEY = $value
+        }
+        $"export AWS_SECRET_ACCESS_KEY=($env.AWS_SECRET_ACCESS_KEY)\n"
+            | save --append .env
+
+        $"[default]
+aws_access_key_id = ($env.AWS_ACCESS_KEY_ID)
+aws_secret_access_key = ($env.AWS_SECRET_ACCESS_KEY)
+" | save aws-creds.conf --force
+
+        (
+            kubectl --namespace crossplane-system
+                create secret generic aws-creds
+                --from-file creds=./aws-creds.conf
+        )
+
     }
 
     if $app {
@@ -232,6 +259,24 @@ Press any key to continue.
             }
         } | to yaml | kubectl apply --filename -
 
+    } else if $hyperscaler == "aws" {
+
+        {
+            apiVersion: "aws.upbound.io/v1beta1"
+            kind: "ProviderConfig"
+            metadata: { name: default }
+            spec: {
+                credentials: {
+                    source: Secret
+                    secretRef: {
+                        namespace: crossplane-system
+                        name: aws-creds
+                        key: creds
+                    }
+                }
+            }
+        } | to yaml | kubectl apply --filename -
+    
     }
 
     if ($github_user | is-not-empty) and ($github_token | is-not-empty) {
