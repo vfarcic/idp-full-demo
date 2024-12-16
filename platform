@@ -178,7 +178,7 @@ def "main setup apps" [] {
 
     }
 
-    open .crossplane/app.yaml
+    open crossplane/app.yaml
         | upsert spec.parameters.image $"ghcr.io/($github_data.user)/idp-full-app"
         | upsert spec.parameters.tag "FIXME"
         | save crossplane/app.yaml --force
