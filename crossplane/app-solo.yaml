@@ -1,4 +1,4 @@
-apiVersion: devopstoolkitseries.com/v1alpha1
+apiVersion: devopstoolkit.live/v1alpha1
 kind: AppClaim
 metadata:
   name: silly-demo
@@ -13,7 +13,7 @@ spec:
   parameters:
     namespace: a-team
     image: ghcr.io/vfarcic/idp-full-demo
-    tag: latest
+    tag: "0.0.5"
     port: 8080
     host: silly-demo.127.0.0.1.nip.io
     ingressClassName: nginx

@@ -147,42 +147,34 @@ def "main setup apps" [] {
     kubectl create namespace a-team
 
     (
-        main apply crossplane
-            --hyperscaler $hyperscaler
+        main apply crossplane --hyperscaler $hyperscaler
             --db true --app true --github true
             --github_user $github_data.user
             --github_token $github_data.token
     )
 
-    if $hyperscaler == "azure" {
+    upsert crossplane $hyperscaler $github_data.user
 
-        let date_suffix = (date now | format date "%Y%m%d%H%M%S")
+}
 
-        open crossplane/azure-sql.yaml |
-            | upsert spec.id $"silly-demo-db-($date_suffix)"
-            | save crossplane/azure-sql.yaml --force
+# Sets up the policies demo
+def "main setup policies" [] {
 
-        open crossplane/azure-sql-password.yaml |
-            | upsert metadata.name $"silly-demo-db-($date_suffix)-password"
-            | save crossplane/azure-sql-password.yaml --force
+    rm --force .env
 
-        open crossplane/app.yaml |
-            | upsert spec.parameters.db.secret $"silly-demo-db-($date_suffix)"
-            | save crossplane/app.yaml --force
+    main create kubernetes kind
 
-    } else {
+    main apply ingress kind nginx
 
-        open crossplane/app.yaml |
-            | upsert spec.parameters.db.secret "silly-demo-db"
-            | save crossplane/app.yaml --force
+    kubectl create namespace a-team
 
-    }
+    main apply kyverno
 
-    open crossplane/app.yaml
-        | upsert spec.parameters.image $"ghcr.io/($github_data.user)/idp-full-app"
-        | upsert spec.parameters.tag "FIXME"
-        | save crossplane/app.yaml --force
+    main apply crossplane --app true
 
+    mkdir tmp
+
+    cp crossplane/app-solo.yaml tmp/appclaim.yaml
 }
 
 # Sets up the CLIs demo
@@ -219,7 +211,7 @@ def "main destroy all" [] {
     
 }
 
-# Destroys up the apps demo
+# Destroys the apps demo
 def "main destroy apps" [] {
 
     kubectl --namespace a-team delete --filename crossplane/repo.yaml
@@ -239,6 +231,13 @@ def "main destroy apps" [] {
     rm --force --recursive idp-full-app
 
     gh repo delete $"($env.GITHUB_USER)/idp-full-app"
+
+}
+
+# Destroys the policies demo
+def "main destroy policies" [] {
+
+    main destroy kubernetes kind
 
 }
 
@@ -288,3 +287,38 @@ def "main describe resource" [
 
 }
 
+def "upsert crossplane" [
+    hyperscaler: string
+    github_user: string
+] {
+
+    if $hyperscaler == "azure" {
+
+        let date_suffix = (date now | format date "%Y%m%d%H%M%S")
+
+        open crossplane/azure-sql.yaml |
+            | upsert spec.id $"silly-demo-db-($date_suffix)"
+            | save crossplane/azure-sql.yaml --force
+
+        open crossplane/azure-sql-password.yaml |
+            | upsert metadata.name $"silly-demo-db-($date_suffix)-password"
+            | save crossplane/azure-sql-password.yaml --force
+
+        open crossplane/app.yaml |
+            | upsert spec.parameters.db.secret $"silly-demo-db-($date_suffix)"
+            | save crossplane/app.yaml --force
+
+    } else {
+
+        open crossplane/app.yaml |
+            | upsert spec.parameters.db.secret "silly-demo-db"
+            | save crossplane/app.yaml --force
+
+    }
+
+    open crossplane/app.yaml
+        | upsert spec.parameters.image $"ghcr.io/($github_user)/idp-full-app"
+        | upsert spec.parameters.tag "FIXME"
+        | save crossplane/app.yaml --force
+
+}
