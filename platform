@@ -168,8 +168,6 @@ def "main setup policies" [] {
 
     kubectl create namespace a-team
 
-    # main apply kyverno
-
     main apply crossplane --app true
 
     mkdir tmp
