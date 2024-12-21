@@ -12,13 +12,13 @@ spec:
       location: local
   parameters:
     namespace: a-team
-    image: ghcr.io/vfarcic/idp-full-demo
+    image: ghcr.io/vfarcic/idp-full-app
     tag: FIXME
     port: 8080
     host: silly-demo.127.0.0.1.nip.io
     ingressClassName: nginx
     db:
-      secret: silly-demo-db-20241215230750
+      secret: silly-demo-db
     repository:
       enabled: true
       name: idp-full-app
