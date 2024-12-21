@@ -180,6 +180,8 @@ def "main setup clis" [] {
     
     rm --force .env
 
+    let github_data = main get github
+
     main create kubernetes kind
 
     main apply ingress kind nginx
