@@ -4,3 +4,4 @@
 /aws-creds.conf
 /azure-creds.json
 /idp-full-app
+/devbox.lock
