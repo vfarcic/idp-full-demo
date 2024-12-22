@@ -107,7 +107,7 @@ def "main setup all" [] {
     #         .github/workflows/sync-control-plane-direct.yml
     # )
 
-    open .crossplane/app.yaml
+    open crossplane/app.yaml
         | upsert spec.parameters.image $"ghcr.io/($github_data.user)/idp-full-app"
         | upsert spec.parameters.tag "FIXME"
         | save crossplane/app.yaml --force
@@ -125,6 +125,8 @@ def "main setup all" [] {
     # cd ..
 
     # rm -rf idp-full-app
+
+    upsert crossplane $hyperscaler $github_data.user
 
 }
 
@@ -194,9 +196,19 @@ def "main setup clis" [] {
 # Destroys the complete demo
 def "main destroy all" [] {
 
-    rm --force apps/*.yaml
+    # (
+    #     kubectl --namespace a-team delete
+    #         --filename idp-full-app/apps/*.yaml
+    # )
 
-    main delete crossplane $env.HYPERSCALER
+    # (
+    #     kubectl --namespace a-team delete
+    #         --filename crossplane/repo.yaml
+    # )
+
+    # rm --force idp-full-app/apps/*.yaml
+
+    main delete crossplane
 
     main destroy kubernetes kind
 
@@ -215,7 +227,7 @@ def "main destroy apps" [] {
 
     kubectl --namespace a-team delete --filename idp-full-app/apps
 
-    main delete crossplane $env.HYPERSCALER
+    main delete crossplane
 
     if $env.HYPERSCALER == "google" {
 
