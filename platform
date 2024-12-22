@@ -5,7 +5,6 @@ source scripts/crossplane.nu
 source scripts/get-hyperscaler.nu
 source scripts/ingress.nu
 source scripts/github.nu
-source scripts/kyverno.nu
 source scripts/argocd.nu
 source scripts/port.nu
 
@@ -85,8 +84,6 @@ def "main setup all" [] {
     main apply port $github_data.user "idp-full-app"
 
     kubectl create namespace a-team
-
-    main apply kyverno
 
     main apply argocd "argocd.127.0.0.1.nip.io" false "nginx"
 
