@@ -2,14 +2,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    description: This is a silly demo
-    language: Go
-    owner: Viktor Farcic (viktor@farcic.com)
-    team: dot
   labels:
     app.kubernetes.io/name: silly-demo
-    backstage.io/kubernetes-id: silly-demo
   name: silly-demo
 spec:
   replicas: 2
@@ -20,7 +14,6 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: silly-demo
-        backstage.io/kubernetes-id: silly-demo
     spec:
       shareProcessNamespace: true
       containers:
@@ -47,14 +40,8 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  annotations:
-    description: This is a silly demo
-    language: Go
-    owner: Viktor Farcic (viktor@farcic.com)
-    team: dot
   labels:
     app.kubernetes.io/name: silly-demo
-    backstage.io/kubernetes-id: silly-demo
   name: silly-demo
 spec:
   ingressClassName: nginx
@@ -73,14 +60,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    description: This is a silly demo
-    language: Go
-    owner: Viktor Farcic (viktor@farcic.com)
-    team: dot
   labels:
     app.kubernetes.io/name: silly-demo
-    backstage.io/kubernetes-id: silly-demo
   name: silly-demo
 spec:
   ports:
