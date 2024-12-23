@@ -206,7 +206,7 @@ Press any key to continue.
             apiVersion: "pkg.crossplane.io/v1"
             kind: "Configuration"
             metadata: { name: "crossplane-sql" }
-            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-sql:v0.8.161" }
+            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-sql:v1.0.2" }
         } | to yaml | kubectl apply --filename -
 
     }

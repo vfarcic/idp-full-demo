@@ -112,9 +112,9 @@ def "main setup all" [] {
         | upsert spec.parameters.tag "FIXME"
         | save crossplane/app.yaml --force
 
-    # open argocd-apps.yaml
-    #     | upsert spec.source.repoURL $"https://github.com/($github_data.user)/idp-full-app"
-    #     | save argocd-apps.yaml --force
+    open argocd-apps.yaml
+        | upsert spec.source.repoURL $"https://github.com/($github_data.user)/idp-full-app"
+        | save argocd-apps.yaml --force
 
     # git add .
 
@@ -172,6 +172,7 @@ def "main setup policies" [] {
     mkdir tmp
 
     cp crossplane/app-solo.yaml tmp/appclaim.yaml
+
 }
 
 # Sets up the CLIs demo
@@ -198,7 +199,7 @@ def "main destroy all" [] {
 
     (
         kubectl --namespace a-team delete
-            --filename idp-full-app/apps/*.yaml
+            --filename idp-full-app/apps
     )
 
     (
@@ -206,7 +207,19 @@ def "main destroy all" [] {
             --filename crossplane/repo.yaml
     )
 
-    rm --force idp-full-app/apps/*.yaml
+    cd idp-full-app
+
+    rm --force apps/*.yaml
+
+    touch apps/empty
+
+    git add .
+
+    git commit -m "Destroy [skip ci]"
+
+    git push
+
+    cd ..
 
     main delete crossplane
 
@@ -263,12 +276,12 @@ def "main get resource types" [] {
 
     (
         kubectl api-resources
-            --api-group devopstoolkitseries.com
+            --api-group devopstoolkit.live
             --namespaced --output name
     )
         | detect columns --no-headers
         | rename name
-        | str replace --all --regex '.devopstoolkitseries.com' '' name
+        | str replace --all --regex '.devopstoolkit.live' '' name
 
 }
 

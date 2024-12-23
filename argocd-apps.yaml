@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/vfarcic/idp-full-demo
+    repoURL: https://github.com/vfarcic/idp-full-app
     targetRevision: HEAD
     path: apps
   destination:

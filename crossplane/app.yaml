@@ -18,7 +18,7 @@ spec:
     host: silly-demo.127.0.0.1.nip.io
     ingressClassName: nginx
     db:
-      secret: silly-demo-db
+      secret: silly-demo-db-20241222212959
     repository:
       enabled: true
       name: idp-full-app
