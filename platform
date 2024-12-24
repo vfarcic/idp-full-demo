@@ -6,7 +6,6 @@ source scripts/get-hyperscaler.nu
 source scripts/ingress.nu
 source scripts/github.nu
 source scripts/argocd.nu
-source scripts/port.nu
 
 def main [] {}
 
@@ -80,8 +79,6 @@ def "main setup all" [] {
     main create kubernetes kind
 
     main apply ingress kind nginx
-
-    main apply port $github_data.user "idp-full-app"
 
     kubectl create namespace a-team
 
@@ -224,8 +221,6 @@ def "main destroy all" [] {
     main delete crossplane
 
     main destroy kubernetes kind
-
-    main delete port
 
     rm --force --recursive idp-full-app
 
