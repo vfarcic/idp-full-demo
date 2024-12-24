@@ -11,7 +11,8 @@
     "teller@2.0.7",
     "go@1.23.3",
     "yq-go@4.44.5",
-    "azure-cli@2.67.0"
+    "azure-cli@2.67.0",
+    "viddy@1.3.0"
   ],
   "shell": {
     "init_hook": [

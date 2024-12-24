@@ -1,9 +1,9 @@
-apiVersion: devopstoolkitseries.com/v1alpha1
+apiVersion: devopstoolkit.live/v1alpha1
 kind: SQLClaim
 metadata:
   name: silly-demo-db
 spec:
-  id: silly-demo-db-20241222212959
+  id: silly-demo-db-20241224025304
   compositionSelector:
     matchLabels:
       provider: azure
