@@ -6,6 +6,7 @@ source scripts/get-hyperscaler.nu
 source scripts/ingress.nu
 source scripts/github.nu
 source scripts/argocd.nu
+source scripts/backstage.nu
 
 def main [] {}
 
@@ -72,6 +73,8 @@ def "main setup all" [] {
     
     rm --force .env
 
+    rm --force --recursive backstage
+
     let hyperscaler = main get hyperscaler
 
     let github_data = main get github
@@ -82,7 +85,12 @@ def "main setup all" [] {
 
     kubectl create namespace a-team
 
-    main apply argocd "argocd.127.0.0.1.nip.io" false "nginx"
+    (
+        main apply argocd 
+            --host_name "argocd.127.0.0.1.nip.io"
+            --apply_apps false
+            --ingress_class_name "nginx"
+    )
 
     (
         main apply crossplane
@@ -113,6 +121,8 @@ def "main setup all" [] {
         | upsert spec.source.repoURL $"https://github.com/($github_data.user)/idp-full-app"
         | save argocd-apps.yaml --force
 
+    main apply backstage
+
     # git add .
 
     # git commit -m "Initial commit"
@@ -124,6 +134,45 @@ def "main setup all" [] {
     # rm -rf idp-full-app
 
     upsert crossplane $hyperscaler $github_data.user
+
+}
+
+# Sets up the complete demo
+def "main setup backstage" [] {
+    
+    rm --force .env
+
+    rm --force --recursive backstage
+
+    let github_data = main get github
+
+    main create kubernetes kind
+
+    main apply ingress kind nginx
+
+    kubectl create namespace a-team
+
+    (
+        main apply argocd 
+            --host_name "argocd.127.0.0.1.nip.io"
+            --apply_apps false
+            --ingress_class_name "nginx"
+    )
+
+    main apply crossplane --db true --app true --github true
+
+    open crossplane/app.yaml
+        | upsert spec.parameters.image $"ghcr.io/vfarcic/silly-demo"
+        | upsert spec.parameters.tag "1.4.342"
+        | save crossplane/app.yaml --force
+
+    gh repo create $"($github_data.user)/idp-full-app" --public
+
+    open argocd-apps.yaml
+        | upsert spec.source.repoURL $"https://github.com/($github_data.user)/idp-full-app"
+        | save argocd-apps.yaml --force
+
+    main apply backstage
 
 }
 
@@ -226,6 +275,15 @@ def "main destroy all" [] {
 
     gh repo delete $"($env.GITHUB_USER)/idp-full-app"
     
+}
+
+# Sets up the complete demo
+def "main destroy backstage" [] {
+    
+    main destroy kubernetes kind
+    
+    gh repo delete $"($env.GITHUB_USER)/idp-full-app"
+
 }
 
 # Destroys the apps demo
