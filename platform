@@ -71,19 +71,13 @@ def "main run ci" [
 # Sets up the complete demo
 def "main setup all" [] {
     
-    rm --force .env
+    setup common
 
     rm --force --recursive backstage
 
     let hyperscaler = main get hyperscaler
 
     let github_data = main get github
-
-    main create kubernetes kind
-
-    main apply ingress kind nginx
-
-    kubectl create namespace a-team
 
     (
         main apply argocd 
@@ -123,14 +117,6 @@ def "main setup all" [] {
 
     main apply backstage
 
-    # git add .
-
-    # git commit -m "Initial commit"
-
-    # git push --set-upstream origin main
-
-    # cd ..
-
     # rm -rf idp-full-app
 
     upsert crossplane $hyperscaler $github_data.user
@@ -140,17 +126,11 @@ def "main setup all" [] {
 # Sets up the complete demo
 def "main setup backstage" [] {
     
-    rm --force .env
+    setup common
 
     rm --force --recursive backstage
 
     let github_data = main get github
-
-    main create kubernetes kind
-
-    main apply ingress kind nginx
-
-    kubectl create namespace a-team
 
     (
         main apply argocd 
@@ -179,17 +159,11 @@ def "main setup backstage" [] {
 # Sets up the apps demo
 def "main setup apps" [] {
     
-    rm --force .env
+    setup common
 
     let hyperscaler = main get hyperscaler
 
     let github_data = main get github
-
-    main create kubernetes kind
-
-    main apply ingress kind nginx
-
-    kubectl create namespace a-team
 
     (
         main apply crossplane --hyperscaler $hyperscaler
@@ -205,13 +179,7 @@ def "main setup apps" [] {
 # Sets up the policies demo
 def "main setup policies" [] {
 
-    rm --force .env
-
-    main create kubernetes kind
-
-    main apply ingress kind nginx
-
-    kubectl create namespace a-team
+    setup common
 
     main apply crossplane --app true
 
@@ -224,13 +192,9 @@ def "main setup policies" [] {
 # Sets up the CLIs demo
 def "main setup clis" [] {
     
-    rm --force .env
+    setup common
 
     let github_data = main get github
-
-    main create kubernetes kind
-
-    main apply ingress kind nginx
 
     main apply crossplane --app true
 
@@ -271,13 +235,11 @@ def "main destroy all" [] {
 
     main destroy kubernetes kind
 
-    rm --force --recursive idp-full-app
-
     gh repo delete $"($env.GITHUB_USER)/idp-full-app"
     
 }
 
-# Sets up the complete demo
+# Sets up the Backstage demo
 def "main destroy backstage" [] {
     
     main destroy kubernetes kind
@@ -302,8 +264,6 @@ def "main destroy apps" [] {
     }
 
     main destroy kubernetes kind
-
-    rm --force --recursive idp-full-app
 
     gh repo delete $"($env.GITHUB_USER)/idp-full-app"
 
@@ -395,5 +355,19 @@ def "upsert crossplane" [
         | upsert spec.parameters.image $"ghcr.io/($github_user)/idp-full-app"
         | upsert spec.parameters.tag "FIXME"
         | save crossplane/app.yaml --force
+
+}
+
+def "setup common" [] {
+
+    rm --force .env
+
+    rm --force --recursive idp-full-app
+
+    main create kubernetes kind
+
+    main apply ingress kind nginx
+
+    kubectl create namespace a-team
 
 }
