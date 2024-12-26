@@ -39,6 +39,8 @@ def "main apply argocd" [
             --values argocd-values.yaml --wait
     )
 
+    mkdir argocd
+
     {
         apiVersion: argoproj.io/v1alpha1
         kind: Application
@@ -65,11 +67,11 @@ def "main apply argocd" [
                 }
             }
         }
-    } | save argocd-apps.yaml --force
+    } | save argocd/app.yaml --force
 
     if $apply_apps {
         
-        kubectl apply --filename argocd-apps.yaml
+        kubectl apply --filename argocd/app.yaml
 
     }
 

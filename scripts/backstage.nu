@@ -4,9 +4,11 @@ def --env "main apply backstage" [] {
 
     let kube_url = open kubeconfig-dot.yaml
         | get clusters.0.cluster.server
+    $"export KUBE_URL=$(kube_url)\n" | save --append .env
 
     let kube_ca_data = open kubeconfig-dot.yaml
         | get clusters.0.cluster.certificate-authority-data
+    $"export KUBE_CA_DATA=$(kube_ca_data)\n" | save --append .env
 
     kubectl create namespace backstage
 
@@ -57,6 +59,7 @@ def --env "main apply backstage" [] {
         | get data.token
         | decode base64
         | decode
+    $"export KUBE_SA_TOKEN=$(token)\n" | save --append .env
     
     print $"
 When asked for a name for the Backstage app make sure to keep the default value (ansi yellow_bold)backstage(ansi reset)
@@ -69,16 +72,16 @@ Press any key to continue.
     cd backstage
 
     for package in [
-        "@vrabbi/backstage-plugin-crossplane-common",
-        "@vrabbi/backstage-plugin-crossplane-permissions-backend",
-        "@vrabbi/backstage-plugin-kubernetes-ingestor",
-        "@vrabbi/backstage-plugin-scaffolder-backend-module-terasky-utils"
+        "@vrabbi/backstage-plugin-crossplane-common@1.0.1",
+        "@vrabbi/backstage-plugin-crossplane-permissions-backend@1.0.1",
+        "@vrabbi/backstage-plugin-kubernetes-ingestor@1.0.1",
+        "@vrabbi/backstage-plugin-scaffolder-backend-module-terasky-utils@1.0.1"
     ] {
         yarn --cwd packages/backend add $package
     }
 
     for package in [
-        @vrabbi/backstage-plugin-crossplane-resources-frontend
+        @vrabbi/backstage-plugin-crossplane-resources-frontend@1.0.1
     ] {
         yarn --cwd packages/app add $package
     }
@@ -93,7 +96,7 @@ Press any key to continue.
         | upsert kubernetesIngestor.components.excludedNamespaces.1 "kube-system"
         | upsert kubernetesIngestor.components.disableDefaultWorkloadTypes true
         | upsert kubernetesIngestor.components.onlyIngestAnnotatedResources false
-        | upsert kubernetesIngestor.crossplane.claims.ingestAllClaims false
+        | upsert kubernetesIngestor.crossplane.claims.ingestAllClaims true
         | upsert kubernetesIngestor.crossplane.xrds.publishPhase.allowedTargets ["github.com"]
         | upsert kubernetesIngestor.crossplane.xrds.publishPhase.target "github.com"
         | upsert kubernetesIngestor.crossplane.xrds.publishPhase.target "github.com"
@@ -102,18 +105,19 @@ Press any key to continue.
         | upsert kubernetesIngestor.crossplane.xrds.taskRunner.frequency 10
         | upsert kubernetesIngestor.crossplane.xrds.taskRunner.timeout 600
         | upsert kubernetesIngestor.crossplane.xrds.ingestAllXRDs true
+        | upsert kubernetes {}
         | upsert kubernetes.frontend.podDelete.enabled true
         | upsert kubernetes.serviceLocatorMethod.type "multiTenant"
         | upsert kubernetes.clusterLocatorMethods [{}]
         | upsert kubernetes.clusterLocatorMethods.0.type "config"
         | upsert kubernetes.clusterLocatorMethods.0.clusters [{}]
-        | upsert kubernetes.clusterLocatorMethods.0.clusters.0.url $kube_url
+        | upsert kubernetes.clusterLocatorMethods.0.clusters.0.url "${KUBE_URL}"
         | upsert kubernetes.clusterLocatorMethods.0.clusters.0.name "kind"
         | upsert kubernetes.clusterLocatorMethods.0.clusters.0.authProvider "serviceAccount"
         | upsert kubernetes.clusterLocatorMethods.0.clusters.0.skipTLSVerify true
         | upsert kubernetes.clusterLocatorMethods.0.clusters.0.skipMetricsLookup true
-        | upsert kubernetes.clusterLocatorMethods.0.clusters.0.serviceAccountToken $token
-        | upsert kubernetes.clusterLocatorMethods.0.clusters.0.caData $kube_ca_data
+        | upsert kubernetes.clusterLocatorMethods.0.clusters.0.serviceAccountToken "${KUBE_SA_TOKEN}"
+        | upsert kubernetes.clusterLocatorMethods.0.clusters.0.caData "${KUBE_CA_DATA}"
         | save app-config.yaml --force
 
     open packages/app/src/components/catalog/EntityPage.tsx
@@ -167,5 +171,31 @@ backend.start();`
     cd ..
 
     $"export NODE_OPTIONS=--no-node-snapshot\n" | save --append .env
+
+}
+
+def --env "main build backstage" [
+    --image = "ghcr.io/vfarcic/backstage-demo"
+    --tag = "0.1.0"
+] {
+
+    cd backstage
+
+    yarn install --immutable
+
+    yarn tsc
+
+    yarn build:backend
+
+    (
+        docker image build
+            --file packages/backend/Dockerfile
+            --tag $"($image):($tag)"
+            .
+    )
+
+    docker container run -it -p 7007:7007 $"($image):($tag)"
+
+    cd ..
 
 }

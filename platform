@@ -111,9 +111,9 @@ def "main setup all" [] {
         | upsert spec.parameters.tag "FIXME"
         | save crossplane/app.yaml --force
 
-    open argocd-apps.yaml
+    open argocd/app.yaml
         | upsert spec.source.repoURL $"https://github.com/($github_data.user)/idp-full-app"
-        | save argocd-apps.yaml --force
+        | save argocd/app.yaml --force
 
     main apply backstage
 
@@ -139,6 +139,8 @@ def "main setup backstage" [] {
             --ingress_class_name "nginx"
     )
 
+    kubectl apply --filename argocd/app-backstage.yaml
+
     main apply crossplane --db true --app true --github true
 
     open crossplane/app.yaml
@@ -146,11 +148,18 @@ def "main setup backstage" [] {
         | upsert spec.parameters.tag "1.4.342"
         | save crossplane/app.yaml --force
 
-    gh repo create $"($github_data.user)/idp-full-app" --public
+    (
+        gh repo create $"($github_data.user)/idp-full-app"
+            --public --add-readme
+    )
 
-    open argocd-apps.yaml
+    gh repo clone $"($github_data.user)/idp-full-app"
+
+    touch empty
+
+    open argocd/app.yaml
         | upsert spec.source.repoURL $"https://github.com/($github_data.user)/idp-full-app"
-        | save argocd-apps.yaml --force
+        | save argocd/app.yaml --force
 
     main apply backstage
 
@@ -358,7 +367,7 @@ def "upsert crossplane" [
 
 }
 
-def "setup common" [] {
+def --env "setup common" [] {
 
     rm --force .env
 

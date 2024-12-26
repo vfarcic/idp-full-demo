@@ -140,7 +140,7 @@ aws_secret_access_key = ($env.AWS_SECRET_ACCESS_KEY)
             apiVersion: "pkg.crossplane.io/v1"
             kind: "Configuration"
             metadata: { name: "crossplane-app" }
-            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-application:v0.7.2" }
+            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-application:v0.7.3" }
         } | to yaml | kubectl apply --filename -
 
         if $policies {
