@@ -1,0 +1,9 @@
+mode: production
+image:
+  repository: ghcr.io/vfarcic/idp-full-demo-backstage
+  tag: 0.0.4
+db:
+  instances: 1
+ingress:
+  className: contour
+  host: backstage.127.0.0.1.nip.io

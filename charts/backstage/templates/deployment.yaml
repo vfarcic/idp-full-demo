@@ -1,0 +1,48 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "backstage-demo.fullname" . }}
+  labels:
+    {{- include "backstage-demo.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "backstage-demo.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "backstage-demo.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 7007
+          env:
+            - name: NODE_ENV
+              value: development
+            - name: BACKSTAGE_HOST
+              value: http://{{ .Values.ingress.host }}
+            - name: DB_HOST
+              value: {{ include "backstage-demo.fullname" . }}-db-rw
+          envFrom:
+            {{- if eq .Values.mode "production" }}
+            - secretRef:
+                name: {{ include "backstage-demo.fullname" . }}-db-superuser
+            {{- end }}
+            - secretRef:
+                name: {{ include "backstage-demo.fullname" . }}-config
+          {{- if eq .Values.mode "development" }}
+          command: ["node", "packages/backend", "--config", "app-config.yaml"]
+          {{- end }}

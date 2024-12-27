@@ -70,12 +70,12 @@ def "main run ci" [
 
 # Sets up the complete demo
 def "main setup all" [] {
-    
-    setup common
 
-    rm --force --recursive backstage
+    rm --force .env
 
     let hyperscaler = main get hyperscaler
+    
+    setup common
 
     let github_data = main get github
 
@@ -101,11 +101,6 @@ def "main setup all" [] {
             $"ghcr.io/($github_data.user)"
     )
 
-    # (
-    #     cp ../.github/workflows/sync-control-plane-direct.yml
-    #         .github/workflows/sync-control-plane-direct.yml
-    # )
-
     open crossplane/app.yaml
         | upsert spec.parameters.image $"ghcr.io/($github_data.user)/idp-full-app"
         | upsert spec.parameters.tag "FIXME"
@@ -115,31 +110,29 @@ def "main setup all" [] {
         | upsert spec.source.repoURL $"https://github.com/($github_data.user)/idp-full-app"
         | save argocd/app.yaml --force
 
-    main apply backstage
-
-    # rm -rf idp-full-app
-
     upsert crossplane $hyperscaler $github_data.user
 
 }
 
-# Sets up the complete demo
+# Sets up the Backstage demo
 def "main setup backstage" [] {
-    
-    setup common
 
-    rm --force --recursive backstage
+    rm --force .env
+
+    let hyperscaler = main get hyperscaler
+    
+    let ingress_data = setup common --hyperscaler $hyperscaler
 
     let github_data = main get github
 
     (
         main apply argocd 
-            --host_name "argocd.127.0.0.1.nip.io"
+            --host_name $"argocd.($ingress_data.host)"
             --apply_apps false
-            --ingress_class_name "nginx"
+            --ingress_class_name $ingress_data.class
     )
 
-    kubectl apply --filename argocd/app-backstage.yaml
+    kubectl apply --filename argocd/app.yaml
 
     main apply crossplane --db true --app true --github true
 
@@ -161,12 +154,12 @@ def "main setup backstage" [] {
         | upsert spec.source.repoURL $"https://github.com/($github_data.user)/idp-full-app"
         | save argocd/app.yaml --force
 
-    main apply backstage
-
 }
 
 # Sets up the apps demo
 def "main setup apps" [] {
+
+    rm --force .env
     
     setup common
 
@@ -188,6 +181,8 @@ def "main setup apps" [] {
 # Sets up the policies demo
 def "main setup policies" [] {
 
+    rm --force .env
+
     setup common
 
     main apply crossplane --app true
@@ -200,6 +195,8 @@ def "main setup policies" [] {
 
 # Sets up the CLIs demo
 def "main setup clis" [] {
+
+    rm --force .env
     
     setup common
 
@@ -251,7 +248,7 @@ def "main destroy all" [] {
 # Sets up the Backstage demo
 def "main destroy backstage" [] {
     
-    main destroy kubernetes kind
+    main destroy kubernetes $env.HYPERSCALER
     
     gh repo delete $"($env.GITHUB_USER)/idp-full-app"
 
@@ -367,16 +364,35 @@ def "upsert crossplane" [
 
 }
 
-def --env "setup common" [] {
+def --env "setup common" [
+    --hyperscaler = "kind"
+] {
 
-    rm --force .env
+    mut ingress_class = "nginx"
+
+    if $hyperscaler != "kind" {
+        $ingress_class = "contour"
+    }
+
+    rm --force --recursive kubeconfig*.yaml
 
     rm --force --recursive idp-full-app
 
-    main create kubernetes kind
+    rm --force --recursive backstage
 
-    main apply ingress kind nginx
+    main create kubernetes $hyperscaler
+
+    let ingress_data = (
+        main apply ingress $ingress_class 
+        --hyperscaler $hyperscaler
+    )
 
     kubectl create namespace a-team
+
+    {
+        ip: $ingress_data.ip,
+        host: $"($ingress_data.ip).nip.io",
+        class: $ingress_data.class
+    }
 
 }

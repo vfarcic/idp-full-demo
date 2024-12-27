@@ -1,18 +1,33 @@
 #!/usr/bin/env nu
 
-def "main apply ingress" [provider: string, type = "traefik", env_prefix = ""] {
+def "main apply ingress" [
+    class = "traefik" # The class of Ingress controller to apply. Available options: traefik, contour, nginx
+    --hyperscaler = "none"
+    --env_prefix = ""
+] {
 
-    if $type == "traefik" {
+    if $class == "traefik" {
 
         (
             helm upgrade --install traefik traefik
                 --repo https://helm.traefik.io/traefik
                 --namespace traefik --create-namespace --wait
         )
-    
-    } else if $type == "nginx" {
 
-        if $provider == "kind" {
+    } else if $class == "contour" {
+
+        helm repo add bitnami https://charts.bitnami.com/bitnami
+
+        helm repo update
+
+        (
+            helm upgrade --install contour bitnami/contour
+                --namespace contour --create-namespace --wait
+        )
+    
+    } else if $class == "nginx" {
+
+        if $hyperscaler == "kind" {
 
             (
                 kubectl apply
@@ -45,26 +60,36 @@ def "main apply ingress" [provider: string, type = "traefik", env_prefix = ""] {
 
     } else {
 
-        print $"(ansi red_bold)($type)(ansi reset) is not a supported."
+        print $"(ansi red_bold)($class)(ansi reset) is not a supported."
         exit 1
 
     }
 
-    main get ingress $provider $type $env_prefix
+    main get ingress $class --hyperscaler $hyperscaler --env_prefix $env_prefix
 
 }
 
-def "main get ingress" [provider: string, type = "traefik", env_prefix = ""] {
+def "main get ingress" [
+    class = "traefik" # The class of Ingress controller to apply. Available options: traefik, contour, nginx
+    --hyperscaler: string
+    --env_prefix = ""
+] {
 
-    sleep 30sec
+    mut service_name = $class
+
+    if $class == "contour" {
+        $service_name = "contour-envoy"
+    }
     
     mut ingress_ip = ""
   
-    if $provider == "aws" {
+    if $hyperscaler == "aws" {
+
+        sleep 30sec
 
         let ingress_hostname = (
-            kubectl --namespace traefik
-                get service traefik --output yaml
+            kubectl --namespace $class
+                get service $service_name --output yaml
                 | from yaml
                 | get status.loadBalancer.ingress.0.hostname
         )
@@ -75,29 +100,33 @@ def "main get ingress" [provider: string, type = "traefik", env_prefix = ""] {
             $ingress_ip = (dig +short $ingress_hostname)
         }
 
-    } else if $provider == "kind" {
+        $ingress_ip = $ingress_ip | lines | first
+
+    } else if $hyperscaler == "kind" {
 
         $ingress_ip = "127.0.0.1"
 
     } else {
 
         while $ingress_ip == "" {
-            print "Waiting for Ingress Service IP..."
+
+            print $"Waiting for ($class) Ingress IP from ($service_name) Service..."
+
             sleep 10sec
+
             $ingress_ip = (
-                kubectl --namespace traefik
-                    get service traefik --output yaml
+                kubectl --namespace $class
+                    get service $service_name --output yaml
                     | from yaml
                     | get status.loadBalancer.ingress.0.ip
             )
+
         }
     }
-
-    $ingress_ip = $ingress_ip | lines | first
 
     $"export ($env_prefix)INGRESS_IP=($ingress_ip)\n" | save --append .env
     $"export ($env_prefix)INGRESS_HOST=($ingress_ip).nip.io\n" | save --append .env
 
-    {ip: $ingress_ip, host: $"($ingress_ip).nip.io", class: $type}
+    {ip: $ingress_ip, host: $"($ingress_ip).nip.io", class: $class}
 
 }

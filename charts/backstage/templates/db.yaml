@@ -1,0 +1,14 @@
+{{- if eq .Values.mode "production" -}}
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ include "backstage-demo.fullname" . }}-db
+  labels:
+    {{- include "backstage-demo.labels" . | nindent 4 }}
+spec:
+  instances: {{ .Values.db.instances }}
+  storage:
+    size: 1Gi
+  enableSuperuserAccess: true
+{{- end -}}
