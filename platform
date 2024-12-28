@@ -148,8 +148,6 @@ def "main setup backstage" [] {
 
     gh repo clone $"($github_data.user)/idp-full-app"
 
-    touch empty
-
     open argocd/app.yaml
         | upsert spec.source.repoURL $"https://github.com/($github_data.user)/idp-full-app"
         | save argocd/app.yaml --force

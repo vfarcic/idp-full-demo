@@ -28,7 +28,7 @@ Press any key to continue.
     }
 
     open app-config.yaml
-        | upsert backend.baseUrl.csp.upgrade-insecure-requests false
+        | upsert backend.csp.upgrade-insecure-requests false
         | upsert crossplane.enablePermissions false
         | upsert kubernetesIngestor.components.enabled true
         | upsert kubernetesIngestor.components.taskRunner.frequency 10
@@ -130,59 +130,6 @@ backend.start();`
 
     cd ..
 
-    $"export NODE_OPTIONS=--no-node-snapshot\n" | save --append .env
-
-}
-
-def --env "main build backstage" [
-    tag: string
-    --image = "ghcr.io/vfarcic/idp-full-backstage"
-] {
-
-    cd backstage
-
-    yarn install --immutable
-
-    yarn tsc
-
-    yarn build:backend
-
-    (
-        docker buildx build
-            --file packages/backend/Dockerfile
-            --tag $"($image):($tag)"
-            --platform linux/amd64
-            .
-    )
-
-    docker image push $"($image):($tag)"
-
-    cd ..
-
-    open charts/backstage/Chart.yaml
-        | upsert version $tag
-        | upsert appVersion $tag
-        | save charts/backstage/Chart.yaml --force
-
-    open charts/backstage/values.yaml
-        | upsert image.tag $tag
-        | save charts/backstage/values.yaml --force
-
-    helm package charts/backstage
-
-    helm push $"backstage-($tag).tgz" $"oci://ghcr.io/($image)"
-
-    rm backstage-($tag).tgz
-
-}
-
-def --env "main apply backstage" [
-    tag: string
-    --kubeconfig = "kubeconfig-dot.yaml"
-    --ingress_host = "backstage.127.0.0.1.nip.io"
-    --github_token = "FIXME"
-] {
-
     {
         apiVersion: "v1"
         kind: "Namespace"
@@ -231,18 +178,84 @@ def --env "main apply backstage" [
         }
     } | to yaml | kubectl apply --filename -
 
-    let kube_url = open $kubeconfig
-        | get clusters.0.cluster.server
+    get cluster data
 
-    let kube_ca_data = open $kubeconfig
-        | get clusters.0.cluster.certificate-authority-data
+    $"export NODE_OPTIONS=--no-node-snapshot\n" | save --append .env
 
-    let token_encoded = (
-        kubectl --namespace backstage get secret backstage
-            --output yaml
+}
+
+def --env "main build backstage" [
+    tag: string
+    --image = "ghcr.io/vfarcic/idp-full-backstage"
+    --github_org = "vfarcic"
+] {
+
+    docker login $image
+
+    cd backstage
+
+    yarn install --immutable
+
+    yarn tsc
+
+    yarn build:backend
+
+    (
+        docker buildx build
+            --file packages/backend/Dockerfile
+            --tag $"($image):($tag)"
+            --platform linux/amd64
+            .
     )
-        | from yaml
-        | get data.token
+
+    docker image push $"($image):($tag)"
+
+    cd ..
+
+    open charts/backstage/Chart.yaml
+        | upsert version $tag
+        | upsert appVersion $tag
+        | save charts/backstage/Chart.yaml --force
+
+    open charts/backstage/values.yaml
+        | upsert image.repository $image
+        | upsert image.tag $tag
+        | save charts/backstage/values.yaml --force
+
+    helm package charts/backstage
+
+    helm push $"backstage-($tag).tgz" $"oci://ghcr.io/($image)"
+
+    start $"https://github.com/users/($github_org)/packages/container/package/idp-full-backstage"
+
+    print $"
+Click (ansi yellow_bold)Package settings(ansi reset).
+Click the (ansi yellow_bold)Change visibility(ansi reset) button, select (ansi yellow_bold)Public(ansi reset), type (ansi yellow_bold)idp-full-backstage(ansi reset) to confirm, and click the (ansi yellow_bold)I understand the consequences, change package visibility(ansi reset) button.
+Press any key to continue.
+"
+    input
+
+    start $"https://github.com/users/($github_org)/packages/container/package/idp-full-backstage%2Fbackstage"
+
+    print $"
+Click (ansi yellow_bold)Package settings(ansi reset).
+Click the (ansi yellow_bold)Change visibility(ansi reset) button, select (ansi yellow_bold)Public(ansi reset), type (ansi yellow_bold)idp-full-backstage/backstage(ansi reset) to confirm, and click the (ansi yellow_bold)I understand the consequences, change package visibility(ansi reset) button.
+Press any key to continue.
+"
+    input
+
+    rm $"backstage-($tag).tgz"
+
+}
+
+def --env "main apply backstage" [
+    tag: string
+    --kubeconfig = "kubeconfig-dot.yaml"
+    --ingress_host = "backstage.127.0.0.1.nip.io"
+    --github_token = "FIXME"
+] {
+
+    let cluster_data = get cluster data
 
     {
         apiVersion: "v1"
@@ -253,9 +266,9 @@ def --env "main apply backstage" [
         }
         type: "Opaque"
         data: {
-            KUBE_URL: ($kube_url | encode base64)
-            KUBE_SA_TOKEN: $token_encoded
-            KUBE_CA_DATA: ($kube_ca_data | encode base64)
+            KUBE_URL: ($cluster_data.kube_url | encode base64)
+            KUBE_SA_TOKEN: $cluster_data.token_encoded
+            KUBE_CA_DATA: ($cluster_data.kube_ca_data | encode base64)
             GITHUB_TOKEN: ($github_token | encode base64)
         }
     }
@@ -275,5 +288,38 @@ def --env "main apply backstage" [
             --set $"ingress.host=($ingress_host)"
             --version $tag --wait
     )
+
+    start $"http://($ingress_host)"
+
+}
+
+def "get cluster data" [
+    --kubeconfig = "kubeconfig-dot.yaml"
+] {
+
+    let kube_url = open $kubeconfig
+        | get clusters.0.cluster.server
+    $"export KUBE_URL=($kube_url)\n" | save --append .env
+
+    let kube_ca_data = open $kubeconfig
+        | get clusters.0.cluster.certificate-authority-data
+    $"export KUBE_CA_DATA=($kube_ca_data)\n" | save --append .env
+
+    let token_encoded = (
+        kubectl --namespace backstage get secret backstage
+            --output yaml
+    )
+        | from yaml
+        | get data.token
+
+    let token = ($token_encoded | decode base64 | decode)
+    $"export KUBE_SA_TOKEN=($token)\n" | save --append .env
+
+    {
+        kube_url: $kube_url,
+        kube_ca_data: $kube_ca_data,
+        token_encoded: $token_encoded,
+        token: $token
+    }
 
 }

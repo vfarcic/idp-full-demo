@@ -1,7 +1,7 @@
 mode: production
 image:
-  repository: ghcr.io/vfarcic/idp-full-demo-backstage
-  tag: 0.0.4
+  repository: ghcr.io/vfarcic/idp-full-backstage
+  tag: 0.0.1
 db:
   instances: 1
 ingress:
