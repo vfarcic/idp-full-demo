@@ -132,6 +132,10 @@ def "main setup backstage" [] {
             --ingress_class_name $ingress_data.class
     )
 
+    open argocd/app.yaml
+        | upsert spec.source.repoURL $"https://github.com/($github_data.user)/idp-full-app"
+        | save argocd/app.yaml --force
+
     kubectl apply --filename argocd/app.yaml
 
     main apply crossplane --db true --app true --github true
@@ -147,10 +151,6 @@ def "main setup backstage" [] {
     )
 
     gh repo clone $"($github_data.user)/idp-full-app"
-
-    open argocd/app.yaml
-        | upsert spec.source.repoURL $"https://github.com/($github_data.user)/idp-full-app"
-        | save argocd/app.yaml --force
 
 }
 

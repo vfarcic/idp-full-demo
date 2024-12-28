@@ -118,6 +118,11 @@ aws_secret_access_key = ($aws_secret_access_key)
                 --region us-east-1 --force
         )
 
+        (
+            kubectl patch storageclass gp2
+                --patch '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+        )
+
     } else if $hyperscaler == "azure" {
 
         mut tenant_id = ""

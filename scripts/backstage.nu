@@ -289,6 +289,8 @@ def --env "main apply backstage" [
             --version $tag --wait
     )
 
+    sleep 10sec
+
     start $"http://($ingress_host)"
 
 }
