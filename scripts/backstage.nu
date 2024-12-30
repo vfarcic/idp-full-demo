@@ -13,16 +13,16 @@ Press any key to continue.
     cd backstage
 
     for package in [
-        "@vrabbi/backstage-plugin-crossplane-common@1.0.1",
-        "@vrabbi/backstage-plugin-crossplane-permissions-backend@1.0.1",
-        "@vrabbi/backstage-plugin-kubernetes-ingestor@1.2.0",
-        "@vrabbi/backstage-plugin-scaffolder-backend-module-terasky-utils@1.0.1"
+        "@terasky/backstage-plugin-crossplane-common@1.0.1",
+        "@terasky/backstage-plugin-crossplane-permissions-backend@1.0.1",
+        "@terasky/backstage-plugin-kubernetes-ingestor@1.2.0",
+        "@terasky/backstage-plugin-scaffolder-backend-module-terasky-utils@1.0.1"
     ] {
         yarn --cwd packages/backend add $package
     }
 
     for package in [
-        @vrabbi/backstage-plugin-crossplane-resources-frontend@1.1.0
+        @terasky/backstage-plugin-crossplane-resources-frontend@1.1.0
     ] {
         yarn --cwd packages/app add $package
     }
@@ -86,7 +86,7 @@ Press any key to continue.
             `} from '@backstage/plugin-kubernetes';`
             `} from '@backstage/plugin-kubernetes';
 
-import { CrossplaneAllResourcesTable, CrossplaneResourceGraph, isCrossplaneAvailable } from '@vrabbi/backstage-plugin-crossplane-resources-frontend';`
+import { CrossplaneAllResourcesTable, CrossplaneResourceGraph, isCrossplaneAvailable } from '@terasky/backstage-plugin-crossplane-resources-frontend';`
         ) | (
             str replace
             `const serviceEntityPage = (
@@ -121,9 +121,9 @@ import { CrossplaneAllResourcesTable, CrossplaneResourceGraph, isCrossplaneAvail
         | (
             str replace
             `backend.start();`
-            `backend.add(import('@vrabbi/backstage-plugin-crossplane-permissions-backend'));
-backend.add(import('@vrabbi/backstage-plugin-kubernetes-ingestor'));
-backend.add(import('@vrabbi/backstage-plugin-scaffolder-backend-module-terasky-utils'));
+            `backend.add(import('@terasky/backstage-plugin-crossplane-permissions-backend'));
+backend.add(import('@terasky/backstage-plugin-kubernetes-ingestor'));
+backend.add(import('@terasky/backstage-plugin-scaffolder-backend-module-terasky-utils'));
 
 backend.start();`
         ) | save packages/backend/src/index.ts --force

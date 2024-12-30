@@ -75,15 +75,15 @@ def "main setup all" [] {
 
     let hyperscaler = main get hyperscaler
     
-    setup common
+    let ingress_data = setup common --hyperscaler $hyperscaler
 
     let github_data = main get github
 
     (
-        main apply argocd 
-            --host_name "argocd.127.0.0.1.nip.io"
+        main apply argocd
+            --host_name $"argocd.($ingress_data.host)"
             --apply_apps false
-            --ingress_class_name "nginx"
+            --ingress_class_name $ingress_data.class
     )
 
     (
