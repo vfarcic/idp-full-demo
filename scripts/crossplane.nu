@@ -8,6 +8,7 @@ def "main apply crossplane" [
     --github_user: string,  # GitHub user required for the DOT GitHub Configuration and optinal for the DOT App Configuration
     --github_token: string, # GitHub token required for the DOT GitHub Configuration and optinal for the DOT App Configuration
     --policies = false      # Whether to create Validating ADmission Policies
+    --skip_login = false    # Whether to skip the login (only for Azure)
 ] {
 
     mut project_id = ""
@@ -114,7 +115,9 @@ aws_secret_access_key = ($env.AWS_SECRET_ACCESS_KEY)
         $"export AZURE_TENANT=($azure_tenant)\n"
             | save --append .env
         
-        az login --tenant $azure_tenant
+        if $skip_login == false {
+            az login --tenant $azure_tenant
+        }
     
         let subscription_id = (az account show --query id -o tsv)
     

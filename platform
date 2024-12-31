@@ -89,7 +89,7 @@ def "main setup all" [] {
     (
         main apply crossplane
             --hyperscaler $hyperscaler
-            --db true --app true --github true
+            --db true --app true --github true --skip_login true
             --github_user $github_data.user
             --github_token $github_data.token
     )
@@ -104,6 +104,7 @@ def "main setup all" [] {
     open crossplane/app.yaml
         | upsert spec.parameters.image $"ghcr.io/($github_data.user)/idp-full-app"
         | upsert spec.parameters.tag "FIXME"
+        | upsert spec.parameters.host $"silly-demo.($ingress_data.host)"
         | save crossplane/app.yaml --force
 
     open argocd/app.yaml
