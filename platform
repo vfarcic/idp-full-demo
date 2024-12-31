@@ -212,15 +212,19 @@ def "main setup clis" [] {
 # Destroys the complete demo
 def "main destroy all" [] {
 
-    (
-        kubectl --namespace a-team delete
-            --filename idp-full-app/apps
-    )
+    do --ignore-errors {
+        (
+            kubectl --namespace a-team delete
+                --filename idp-full-app/apps
+        )
+    }
 
-    (
-        kubectl --namespace a-team delete
-            --filename crossplane/repo.yaml
-    )
+    do --ignore-errors {
+        (
+            kubectl --namespace a-team delete
+                --filename crossplane/repo.yaml
+        )
+    }
 
     cd idp-full-app
 

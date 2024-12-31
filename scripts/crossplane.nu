@@ -18,6 +18,7 @@ def "main apply crossplane" [
     (
         helm upgrade --install crossplane crossplane/crossplane
             --namespace crossplane-system --create-namespace
+            --set args='{"--enable-usages"}'
             --wait
     )
 
@@ -209,7 +210,7 @@ Press any key to continue.
             apiVersion: "pkg.crossplane.io/v1"
             kind: "Configuration"
             metadata: { name: "crossplane-sql" }
-            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-sql:v1.0.2" }
+            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-sql:v1.0.14" }
         } | to yaml | kubectl apply --filename -
 
     }
@@ -311,16 +312,74 @@ Press any key to continue.
         }
     } | to yaml | kubectl apply --filename -
 
+    wait crossplane
 
-    print $"(ansi yellow_bold)Waiting for Crossplane providers to be deployed...(ansi reset)"
+    if $db and $hyperscaler != "none" {
 
-    sleep 60sec
+        (
+            main apply providerconfig $hyperscaler
+                --google_project_id $project_id
+        )
 
-    (
-        kubectl wait
-            --for=condition=healthy provider.pkg.crossplane.io
-            --all --timeout 30m
-    )
+    }
+
+    if ($github_user | is-not-empty) and ($github_token | is-not-empty) {
+
+        {
+            apiVersion: v1,
+            kind: Secret,
+            metadata: {
+                name: github,
+                namespace: crossplane-system
+            },
+            type: Opaque,
+            stringData: {
+                credentials: $"{\"token\":\"($github_token)\",\"owner\":\"($github_user)\"}"
+            }
+        } | to yaml | kubectl apply --filename -
+
+        if $app or $github {
+
+            {
+                apiVersion: "github.upbound.io/v1beta1",
+                kind: ProviderConfig,
+                metadata: {
+                    name: default
+                },
+                spec: {
+                    credentials: {
+                        secretRef: {
+                            key: credentials,
+                            name: github,
+                            namespace: crossplane-system,
+                        },
+                        source: Secret
+                    }
+                }
+            } | to yaml | kubectl apply --filename -
+
+        }
+
+    }
+
+}
+
+def "main delete crossplane" [] {
+
+    mut counter = (kubectl get managed --output name | wc -l | into int)
+
+    while $counter > 0 {
+        print $"Waiting for remaining ($counter) managed resources to be removed..."
+        sleep 10sec
+        $counter = (kubectl get managed --output name | wc -l | into int)
+    }
+
+}
+
+def "main apply providerconfig" [
+    hyperscaler: string,
+    --google_project_id: string,
+] {
 
     if $hyperscaler == "google" {
 
@@ -329,7 +388,7 @@ Press any key to continue.
             kind: "ProviderConfig"
             metadata: { name: "default" }
             spec: {
-                projectID: $project_id
+                projectID: $google_project_id
                 credentials: {
                     source: "Secret"
                     secretRef: {
@@ -379,55 +438,19 @@ Press any key to continue.
 
     }
 
-    if ($github_user | is-not-empty) and ($github_token | is-not-empty) {
+}
 
-        {
-            apiVersion: v1,
-            kind: Secret,
-            metadata: {
-                name: github,
-                namespace: crossplane-system
-            },
-            type: Opaque,
-            stringData: {
-                credentials: $"{\"token\":\"($github_token)\",\"owner\":\"($github_user)\"}"
-            }
-        } | to yaml | kubectl apply --filename -
+def "wait crossplane" [] {
 
-        if $app or $github {
+    print $"(ansi yellow_bold)Waiting for Crossplane providers to be deployed...(ansi reset)"
 
-            {
-                apiVersion: "github.upbound.io/v1beta1",
-                kind: ProviderConfig,
-                metadata: {
-                    name: default
-                },
-                spec: {
-                    credentials: {
-                        secretRef: {
-                            key: credentials,
-                            name: github,
-                            namespace: crossplane-system,
-                        },
-                        source: Secret
-                    }
-                }
-            } | to yaml | kubectl apply --filename -
+    sleep 60sec
 
-        }
-
-    }
+    (
+        kubectl wait
+            --for=condition=healthy provider.pkg.crossplane.io
+            --all --timeout 30m
+    )
 
 }
 
-def "main delete crossplane" [] {
-
-    mut counter = (kubectl get managed --output name | grep -v object | grep -v database | wc -l | into int)
-
-    while $counter > 0 {
-        print $"Waiting for remaining ($counter) managed resources to be removed..."
-        sleep 10sec
-        $counter = (kubectl get managed --output name | grep -v object | grep -v database | wc -l | into int)
-    }
-
-}
