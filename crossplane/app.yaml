@@ -15,8 +15,8 @@ spec:
     image: ghcr.io/vfarcic/idp-full-app
     tag: FIXME
     port: 8080
-    host: silly-demo.35.172.162.86.nip.io
-    ingressClassName: nginx
+    host: silly-demo.35.243.211.190.nip.io
+    ingressClassName: contour
     db:
       secret: silly-demo-db
     repository:

@@ -198,8 +198,8 @@ aws_secret_access_key = ($env.AWS_SECRET_ACCESS_KEY)
             
             start $"https://console.cloud.google.com/marketplace/product/google/sqladmin.googleapis.com?project=($project_id)"
             
-            print $"(ansi yellow_bold)
-ENABLE(ansi reset) the API.
+            print $"
+(ansi green_bold)ENABLE(ansi reset) the API.
 Press any key to continue.
 "
             input
