@@ -83,13 +83,13 @@ Press any key to continue.
     } else if $hyperscaler == "aws" {
 
         if AWS_ACCESS_KEY_ID not-in $env {
-            $env.AWS_ACCESS_KEY_ID = input $"(ansi green_bold)Enter AWS Access Key ID: (ansi reset)"
+            $env.AWS_ACCESS_KEY_ID = input $"(ansi yellow_bold)Enter AWS Access Key ID: (ansi reset)"
         }
         $"export AWS_ACCESS_KEY_ID=($env.AWS_ACCESS_KEY_ID)\n"
             | save --append .env
 
         if AWS_SECRET_ACCESS_KEY not-in $env {
-            $env.AWS_SECRET_ACCESS_KEY = input $"(ansi green_bold)Enter AWS Secret Access Key: (ansi reset)"
+            $env.AWS_SECRET_ACCESS_KEY = input $"(ansi yellow_bold)Enter AWS Secret Access Key: (ansi reset)"
         }
         $"export AWS_SECRET_ACCESS_KEY=($env.AWS_SECRET_ACCESS_KEY)\n"
             | save --append .env
@@ -109,7 +109,7 @@ aws_secret_access_key = ($env.AWS_SECRET_ACCESS_KEY)
 
         mut azure_tenant = ""
         if AZURE_TENANT not-in $env {
-            $azure_tenant = input $"(ansi green_bold)Enter Azure Tenant: (ansi reset)"
+            $azure_tenant = input $"(ansi yellow_bold)Enter Azure Tenant: (ansi reset)"
         } else {
             $azure_tenant = $env.AZURE_TENANT
         }
@@ -364,14 +364,34 @@ Press any key to continue.
 
 }
 
-def "main delete crossplane" [] {
+def "main delete crossplane" [
+    --kind: string,
+    --name: string,
+    --namespace: string
+] {
 
-    mut counter = (kubectl get managed --output name | wc -l | into int)
+    if ($kind | is-not-empty) and ($name | is-not-empty) and ($namespace | is-not-empty) { 
+        kubectl --namespace $namespace delete $kind $name
+    }
+    
+    mut command = { kubectl get managed --output name }
+    if ($name | is-not-empty) {
+        $command = {
+            (
+                kubectl get managed --output name
+                    --selector $"crossplane.io/claim-name=($name)"
+            )
+        }
+    }
+
+    mut resources = (do $command)
+    mut counter = ($resources | wc -l | into int)
 
     while $counter > 0 {
-        print $"Waiting for remaining ($counter) managed resources to be removed..."
+        print $"($resources)\nWaiting for remaining (ansi yellow_bold)($counter)(ansi reset) managed resources to be (ansi yellow_bold)removed(ansi reset)...\n"
         sleep 10sec
-        $counter = (kubectl get managed --output name | wc -l | into int)
+        $resources = (do $command)
+        $counter = ($resources | wc -l | into int)
     }
 
 }

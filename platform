@@ -105,6 +105,7 @@ def "main setup all" [] {
         | upsert spec.parameters.image $"ghcr.io/($github_data.user)/idp-full-app"
         | upsert spec.parameters.tag "FIXME"
         | upsert spec.parameters.host $"silly-demo.($ingress_data.host)"
+        | upsert spec.parameters.ingressClassName "contour"
         | save crossplane/app.yaml --force
 
     open argocd/app.yaml
@@ -210,7 +211,9 @@ def "main setup clis" [] {
 }
 
 # Destroys the complete demo
-def "main destroy all" [] {
+def "main destroy all" [
+    hyperscaler: string
+] {
 
     do --ignore-errors {
         (
@@ -236,13 +239,15 @@ def "main destroy all" [] {
 
     git commit -m "Destroy [skip ci]"
 
+    git pull
+
     git push
 
     cd ..
 
     main delete crossplane
 
-    main destroy kubernetes kind
+    main destroy kubernetes $hyperscaler
 
     gh repo delete $"($env.GITHUB_USER)/idp-full-app"
     

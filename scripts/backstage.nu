@@ -130,55 +130,7 @@ backend.start();`
 
     cd ..
 
-    {
-        apiVersion: "v1"
-        kind: "Namespace"
-        metadata: {
-            name: "backstage"
-        }
-    } | to yaml | kubectl apply --filename -
-
-    {
-        apiVersion: "v1"
-        kind: "ServiceAccount"
-        metadata: {
-            name: "backstage"
-            namespace: "backstage"
-        }
-    } | to yaml | kubectl apply --filename -
-
-    {
-        apiVersion: "v1"
-        kind: "Secret"
-        metadata: {
-            name: "backstage"
-            namespace: "backstage"
-            annotations: {
-                "kubernetes.io/service-account.name": "backstage"
-            }
-        }
-        type: "kubernetes.io/service-account-token"
-    } | to yaml | kubectl apply --filename -
-
-    {
-        apiVersion: "rbac.authorization.k8s.io/v1"
-        kind: "ClusterRoleBinding"
-        metadata: {
-            name: "backstage"
-        }
-        subjects: [{
-            kind: "ServiceAccount"
-            name: "backstage"
-            namespace: "backstage"
-        }]
-        roleRef: {
-            kind: "ClusterRole"
-            name: "cluster-admin"
-            apiGroup: "rbac.authorization.k8s.io"
-        }
-    } | to yaml | kubectl apply --filename -
-
-    get cluster data
+    get cluster data --create_service_account true
 
     $"export NODE_OPTIONS=--no-node-snapshot\n" | save --append .env
 
@@ -253,9 +205,13 @@ def --env "main apply backstage" [
     --kubeconfig = "kubeconfig-dot.yaml"
     --ingress_host = "backstage.127.0.0.1.nip.io"
     --github_token = "FIXME"
+    --create_service_account = false
 ] {
 
-    let cluster_data = get cluster data
+    let cluster_data = (
+        get cluster data  
+            --create_service_account $create_service_account
+    )
 
     {
         apiVersion: "v1"
@@ -297,7 +253,60 @@ def --env "main apply backstage" [
 
 def "get cluster data" [
     --kubeconfig = "kubeconfig-dot.yaml"
+    --create_service_account = false
 ] {
+
+    if $create_service_account {
+
+        {
+            apiVersion: "v1"
+            kind: "Namespace"
+            metadata: {
+                name: "backstage"
+            }
+        } | to yaml | kubectl apply --filename -
+
+        {
+            apiVersion: "v1"
+            kind: "ServiceAccount"
+            metadata: {
+                name: "backstage"
+                namespace: "backstage"
+            }
+        } | to yaml | kubectl apply --filename -
+
+        {
+            apiVersion: "v1"
+            kind: "Secret"
+            metadata: {
+                name: "backstage"
+                namespace: "backstage"
+                annotations: {
+                    "kubernetes.io/service-account.name": "backstage"
+                }
+            }
+            type: "kubernetes.io/service-account-token"
+        } | to yaml | kubectl apply --filename -
+
+        {
+            apiVersion: "rbac.authorization.k8s.io/v1"
+            kind: "ClusterRoleBinding"
+            metadata: {
+                name: "backstage"
+            }
+            subjects: [{
+                kind: "ServiceAccount"
+                name: "backstage"
+                namespace: "backstage"
+            }]
+            roleRef: {
+                kind: "ClusterRole"
+                name: "cluster-admin"
+                apiGroup: "rbac.authorization.k8s.io"
+            }
+        } | to yaml | kubectl apply --filename -
+
+    }
 
     let kube_url = open $kubeconfig
         | get clusters.0.cluster.server

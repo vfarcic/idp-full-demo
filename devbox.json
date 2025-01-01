@@ -16,7 +16,8 @@
     "nodejs@20.17.0",
     "yarn@latest",
     "eksctl@0.198.0",
-    "awscli2@2.22.13"
+    "awscli2@2.22.13",
+    "github-cli@2.23.0"
   ],
   "shell": {
     "init_hook": [
