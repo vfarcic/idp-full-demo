@@ -15,10 +15,10 @@ spec:
     image: ghcr.io/vfarcic/idp-full-app
     tag: FIXME
     port: 8080
-    host: silly-demo.35.243.211.190.nip.io
+    host: silly-demo.135.237.72.117.nip.io
     ingressClassName: contour
     db:
-      secret: silly-demo-db
+      secret: silly-demo-db-20250101023513
     repository:
       enabled: true
       name: idp-full-app

@@ -213,6 +213,7 @@ def "main setup clis" [] {
 # Destroys the complete demo
 def "main destroy all" [
     hyperscaler: string
+    github_user: string
 ] {
 
     do --ignore-errors {
@@ -249,7 +250,7 @@ def "main destroy all" [
 
     main destroy kubernetes $hyperscaler
 
-    gh repo delete $"($env.GITHUB_USER)/idp-full-app"
+    gh repo delete $"($github_user)/idp-full-app"
     
 }
 
