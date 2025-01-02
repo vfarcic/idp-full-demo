@@ -15,16 +15,16 @@ Press any key to continue.
     cd backstage
 
     for package in [
-        "@terasky/backstage-plugin-crossplane-common@1.0.1",
-        "@terasky/backstage-plugin-crossplane-permissions-backend@1.0.1",
-        "@terasky/backstage-plugin-kubernetes-ingestor@1.2.0",
-        "@terasky/backstage-plugin-scaffolder-backend-module-terasky-utils@1.0.1"
+        "@terasky/backstage-plugin-crossplane-common@1.1.0",
+        "@terasky/backstage-plugin-crossplane-permissions-backend@1.1.0",
+        "@terasky/backstage-plugin-kubernetes-ingestor@1.4.1",
+        "@terasky/backstage-plugin-scaffolder-backend-module-terasky-utils@1.0.3"
     ] {
         yarn --cwd packages/backend add $package
     }
 
     for package in [
-        @terasky/backstage-plugin-crossplane-resources-frontend@1.1.0
+        @terasky/backstage-plugin-crossplane-resources-frontend@1.4.0
     ] {
         yarn --cwd packages/app add $package
     }
