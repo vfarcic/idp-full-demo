@@ -1,6 +1,8 @@
 #!/usr/bin/env nu
 
 def --env "main configure backstage" [] {
+
+    rm --force --recursive backstage
     
     print $"
 When asked for a name for the Backstage app make sure to keep the default value (ansi yellow_bold)backstage(ansi reset)
