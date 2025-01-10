@@ -2,10 +2,10 @@
 
 def --env "main create kubernetes" [
     hyperscaler: string,
-    name = "dot",
-    min_nodes = 2,
-    max_nodes = 4,
-    auth = true
+    --name = "dot",
+    --min_nodes = 2,
+    --max_nodes = 4,
+    --auth = true
 ] {
 
     $env.KUBECONFIG = $"($env.PWD)/kubeconfig-($name).yaml"

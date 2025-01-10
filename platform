@@ -387,8 +387,6 @@ def --env "setup common" [
 
     rm --force --recursive idp-full-app
 
-    rm --force --recursive backstage
-
     main create kubernetes $hyperscaler
 
     let ingress_data = (

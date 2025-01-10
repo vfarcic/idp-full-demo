@@ -1,6 +1,8 @@
 #!/usr/bin/env nu
 
 def --env "main configure backstage" [] {
+
+    rm --force --recursive backstage
     
     print $"
 When asked for a name for the Backstage app make sure to keep the default value (ansi yellow_bold)backstage(ansi reset)
@@ -22,7 +24,7 @@ Press any key to continue.
     }
 
     for package in [
-        @terasky/backstage-plugin-crossplane-resources-frontend@1.1.0
+        "@terasky/backstage-plugin-crossplane-resources-frontend@1.4.0"
     ] {
         yarn --cwd packages/app add $package
     }
@@ -47,6 +49,7 @@ Press any key to continue.
         | upsert kubernetesIngestor.crossplane.xrds.taskRunner.frequency 10
         | upsert kubernetesIngestor.crossplane.xrds.taskRunner.timeout 600
         | upsert kubernetesIngestor.crossplane.xrds.ingestAllXRDs true
+        | upsert kubernetesIngestor.crossplane.xrds.convertDefaultValuesToPlaceholders true
         | upsert kubernetes {}
         | upsert kubernetes.frontend.podDelete.enabled true
         | upsert kubernetes.serviceLocatorMethod.type "multiTenant"
@@ -201,7 +204,7 @@ Press any key to continue.
 }
 
 def --env "main apply backstage" [
-    tag: string
+    tag: string                                   # Available versions can be seen at https://github.com/users/vfarcic/packages/container/idp-full-backstage%2Fbackstage/versions
     --kubeconfig = "kubeconfig-dot.yaml"
     --ingress_host = "backstage.127.0.0.1.nip.io"
     --github_token = "FIXME"
@@ -210,6 +213,7 @@ def --env "main apply backstage" [
 
     let cluster_data = (
         get cluster data  
+            --kubeconfig $kubeconfig
             --create_service_account $create_service_account
     )
 
@@ -246,6 +250,8 @@ def --env "main apply backstage" [
     )
 
     sleep 60sec
+
+    print $"Backstage is available at (ansi yellow_bold)http://($ingress_host)(ansi reset)"
 
     start $"http://($ingress_host)"
 
