@@ -17,7 +17,8 @@
     "yarn@latest",
     "eksctl@0.198.0",
     "awscli2@2.22.13",
-    "github-cli@2.23.0"
+    "github-cli@2.23.0",
+    "kubevela@1.9.13"
   ],
   "shell": {
     "init_hook": [
