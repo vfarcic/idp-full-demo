@@ -39,10 +39,8 @@ Press any key to continue.
         | upsert kubernetesIngestor.components.excludedNamespaces.0 "kube-public"
         | upsert kubernetesIngestor.components.excludedNamespaces.1 "kube-system"
         | upsert kubernetesIngestor.components.customWorkloadTypes []
-        | upsert kubernetesIngestor.components.customWorkloadTypes.0.group "core.oam.dev"
-        | upsert kubernetesIngestor.components.customWorkloadTypes.0.apiVersion "v1beta1"
-        | upsert kubernetesIngestor.components.customWorkloadTypes.0.plural "applications"
-        | upsert kubernetesIngestor.components.disableDefaultWorkloadTypes true
+        | upsert kubernetesIngestor.components.customWorkloadTypes.0 { group: "core.oam.dev", apiVersion: "v1beta1", plural: "applications" }
+        | upsert kubernetesIngestor.components.disableDefaultWorkloadTypes "${DISABLE_DEFAULT_WORKLOAD_TYPES-false}"
         | upsert kubernetesIngestor.components.onlyIngestAnnotatedResources false
         | upsert kubernetesIngestor.crossplane.claims.ingestAllClaims true
         | upsert kubernetesIngestor.crossplane.xrds.publishPhase.allowedTargets ["github.com"]
@@ -213,6 +211,7 @@ def --env "main apply backstage" [
     --ingress_host = "backstage.127.0.0.1.nip.io"
     --github_token = "FIXME"
     --create_service_account = false
+    --disable_default_workload_types = false
 ] {
 
     let cluster_data = (
@@ -250,6 +249,7 @@ def --env "main apply backstage" [
             oci://ghcr.io/vfarcic/idp-full-backstage/backstage
             --namespace backstage --create-namespace
             --set $"ingress.host=($ingress_host)"
+            --set $"ingrestor.disableDefaultWorkloadTypes=($disable_default_workload_types)"
             --version $tag --wait
     )
 
