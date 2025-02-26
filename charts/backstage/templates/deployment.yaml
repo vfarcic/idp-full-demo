@@ -37,7 +37,7 @@ spec:
             - name: DB_HOST
               value: {{ include "backstage-demo.fullname" . }}-db-rw
             - name: DISABLE_DEFAULT_WORKLOAD_TYPES
-              value: {{ .Values.ingrestor.disableDefaultWorkloadTypes }}
+              value: "{{ .Values.ingrestor.disableDefaultWorkloadTypes }}"
           envFrom:
             {{- if eq .Values.mode "production" }}
             - secretRef:

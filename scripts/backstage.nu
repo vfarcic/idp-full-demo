@@ -6,7 +6,7 @@ def --env "main configure backstage" [] {
     
     print $"
 When asked for a name for the Backstage app make sure to keep the default value (ansi yellow_bold)backstage(ansi reset)
-Press any key to continue.
+Press the (ansi yellow_bold)enter key(ansi reset) to continue.
 "
     input
 
@@ -188,7 +188,7 @@ def --env "main build backstage" [
     print $"
 Click (ansi yellow_bold)Package settings(ansi reset).
 Click the (ansi yellow_bold)Change visibility(ansi reset) button, select (ansi yellow_bold)Public(ansi reset), type (ansi yellow_bold)idp-full-backstage(ansi reset) to confirm, and click the (ansi yellow_bold)I understand the consequences, change package visibility(ansi reset) button.
-Press any key to continue.
+Press the (ansi yellow_bold)enter key(ansi reset) to continue.
 "
     input
 
@@ -197,7 +197,7 @@ Press any key to continue.
     print $"
 Click (ansi yellow_bold)Package settings(ansi reset).
 Click the (ansi yellow_bold)Change visibility(ansi reset) button, select (ansi yellow_bold)Public(ansi reset), type (ansi yellow_bold)idp-full-backstage/backstage(ansi reset) to confirm, and click the (ansi yellow_bold)I understand the consequences, change package visibility(ansi reset) button.
-Press any key to continue.
+Press the (ansi yellow_bold)enter key(ansi reset) to continue.
 "
     input
 
