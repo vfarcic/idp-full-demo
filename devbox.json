@@ -18,7 +18,8 @@
     "eksctl@0.198.0",
     "awscli2@2.22.13",
     "github-cli@2.23.0",
-    "kubevela@1.9.13"
+    "kubevela@1.9.13",
+    "okteto@3.4.0"
   ],
   "shell": {
     "init_hook": [

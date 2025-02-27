@@ -1,0 +1,23 @@
+apiVersion: devopstoolkit.live/v1alpha1
+kind: AppClaim
+metadata:
+  name: silly-demo
+  labels:
+    app-owner: vfarcic
+spec:
+  id: silly-demo
+  compositionSelector:
+    matchLabels:
+      type: backend
+      location: local
+  parameters:
+    namespace: jdoe
+    image: ghcr.io/vfarcic/idp-full-demo
+    tag: "0.0.5"
+    port: 8080
+    host: silly-demo.127.0.0.1.nip.io
+    ingressClassName: nginx
+    scaling:
+      enabled: true
+      min: 2
+      max: 4
