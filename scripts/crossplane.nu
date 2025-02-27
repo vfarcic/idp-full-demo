@@ -1,7 +1,7 @@
 #!/usr/bin/env nu
 
 def "main apply crossplane" [
-    --hyperscaler = none,   # Which hyperscaler to use. Available options are `none`, `google`, `aws`, and `azure`
+    --provider = none,      # Which provider to use. Available options are `none`, `google`, `aws`, and `azure`
     --app = false,          # Whether to apply DOT App Configuration
     --db = false,           # Whether to apply DOT SQL Configuration
     --github = false,       # Whether to apply DOT GitHub Configuration
@@ -22,7 +22,7 @@ def "main apply crossplane" [
             --wait
     )
 
-    if $hyperscaler == "google" {
+    if $provider == "google" {
 
         if PROJECT_ID in $env {
             $project_id = $env.PROJECT_ID
@@ -80,7 +80,7 @@ Press any key to continue.
                 --from-file creds=./gcp-creds.json
         )
 
-    } else if $hyperscaler == "aws" {
+    } else if $provider == "aws" {
 
         if AWS_ACCESS_KEY_ID not-in $env {
             $env.AWS_ACCESS_KEY_ID = input $"(ansi yellow_bold)Enter AWS Access Key ID: (ansi reset)"
@@ -105,7 +105,7 @@ aws_secret_access_key = ($env.AWS_SECRET_ACCESS_KEY)
                 --from-file creds=./aws-creds.conf
         )
 
-    } else if $hyperscaler == "azure" {
+    } else if $provider == "azure" {
 
         mut azure_tenant = ""
         if AZURE_TENANT not-in $env {
@@ -194,7 +194,7 @@ aws_secret_access_key = ($env.AWS_SECRET_ACCESS_KEY)
 
         print $"(ansi yellow_bold)Applying `dot-sql` Configuration...(ansi reset)"
 
-        if $hyperscaler == "google" {
+        if $provider == "google" {
             
             start $"https://console.cloud.google.com/marketplace/product/google/sqladmin.googleapis.com?project=($project_id)"
             
@@ -314,10 +314,10 @@ Press any key to continue.
 
     wait crossplane
 
-    if $db and $hyperscaler != "none" {
+    if $db and $provider != "none" {
 
         (
-            main apply providerconfig $hyperscaler
+            main apply providerconfig $provider
                 --google_project_id $project_id
         )
 
@@ -397,11 +397,11 @@ def "main delete crossplane" [
 }
 
 def "main apply providerconfig" [
-    hyperscaler: string,
+    provider: string,
     --google_project_id: string,
 ] {
 
-    if $hyperscaler == "google" {
+    if $provider == "google" {
 
         {
             apiVersion: "gcp.upbound.io/v1beta1"
@@ -420,7 +420,7 @@ def "main apply providerconfig" [
             }
         } | to yaml | kubectl apply --filename -
 
-    } else if $hyperscaler == "aws" {
+    } else if $provider == "aws" {
 
         {
             apiVersion: "aws.upbound.io/v1beta1"
@@ -438,7 +438,7 @@ def "main apply providerconfig" [
             }
         } | to yaml | kubectl apply --filename -
     
-    } else if $hyperscaler == "azure" {
+    } else if $provider == "azure" {
 
         {
             apiVersion: "azure.upbound.io/v1beta1"

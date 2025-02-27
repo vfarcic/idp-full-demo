@@ -74,9 +74,9 @@ def "main setup all" [] {
 
     rm --force .env
 
-    let hyperscaler = main get hyperscaler
+    let provider = main get hyperscaler
     
-    let ingress_data = setup common --hyperscaler $hyperscaler
+    let ingress_data = setup common --hyperscaler $provider
 
     let github_data = main get github
 
@@ -89,7 +89,7 @@ def "main setup all" [] {
 
     (
         main apply crossplane
-            --hyperscaler $hyperscaler
+            --provider $provider
             --db true --app true --github true --skip_login true
             --github_user $github_data.user
             --github_token $github_data.token
@@ -113,7 +113,7 @@ def "main setup all" [] {
         | upsert spec.source.repoURL $"https://github.com/($github_data.user)/idp-full-app"
         | save argocd/app.yaml --force
 
-    upsert crossplane $hyperscaler $github_data.user
+    upsert crossplane $provider $github_data.user
 
 }
 
@@ -164,18 +164,18 @@ def "main setup apps" [] {
     
     setup common
 
-    let hyperscaler = main get hyperscaler
+    let provider = main get hyperscaler
 
     let github_data = main get github
 
     (
-        main apply crossplane --hyperscaler $hyperscaler
+        main apply crossplane --provider $provider
             --db true --app true --github true
             --github_user $github_data.user
             --github_token $github_data.token
     )
 
-    upsert crossplane $hyperscaler $github_data.user
+    upsert crossplane $provider $github_data.user
 
 }
 
