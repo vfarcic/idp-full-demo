@@ -14,6 +14,8 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+
+	"silly-demo/internal/handlers"
 )
 
 func main() {
@@ -34,6 +36,8 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 	router.GET("/", rootHandler)
+	router.POST("/video", handlers.VideoPostHandler)
+	router.GET("/videos", handlers.VideosGetHandler)
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
 		port = "8080"

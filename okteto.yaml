@@ -1,10 +1,7 @@
-# deploy:
-#   - name: Crossplane Apply
-#     command: kubectl --namespace jdoe apply --filename crossplane/app-jdoe.yaml
 dev:
   silly-demo:
     image: okteto/golang:1
-    command: bash
+    command: air go run .
     sync:
       - .:/usr/src/app
     volumes:
@@ -16,4 +13,3 @@ dev:
           - SYS_PTRACE
     forward:
       - 8080:8080
-      - 2345:2345

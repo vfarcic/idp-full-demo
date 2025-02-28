@@ -4,7 +4,6 @@
     "nushell@0.100.0",
     "kubectl@1.31.2",
     "kind@0.24.0",
-    "zellij@0.41.2",
     "kubernetes-helm@3.16.3",
     "path:gcloud#google-cloud-sdk",
     "crossplane-cli@1.17.1",
