@@ -8,6 +8,8 @@ source scripts/github.nu
 source scripts/argocd.nu
 source scripts/backstage.nu
 source scripts/kubevela.nu
+source scripts/atlas.nu
+source scripts/external-secrets.nu
 
 def main [] {}
 
@@ -340,16 +342,29 @@ def "main describe resource" [
 
 def "main apply dev" [
     user: string
+    --db: string
 ] {
 
-    open crossplane/app-dev.yaml |
+    mut manifest = "crossplane/app-dev.yaml"
+
+    if $db != "" {
+
+        $manifest = "crossplane/app-dev-db.yaml"
+
+        open $manifest |
+            upsert spec.parameters.db.secret $db |
+            save $manifest --force
+
+    }
+
+    open $manifest |
         upsert spec.parameters.namespace $user |
         upsert spec.id $"($user)-silly-demo" |
         upsert spec.parameters.host $"($user).silly-demo.($env.INGRESS_HOST)" |
-        save crossplane/app-dev.yaml --force
+        save $manifest --force
 
     (
-        kubectl --namespace ($user) apply --filename crossplane/app-dev.yaml
+        kubectl --namespace ($user) apply --filename $manifest
     )
 
     sleep 2sec
@@ -362,7 +377,7 @@ def "main apply dev" [
     okteto context
 
     print $"
-The application will be accessible through (ansi yellow_bold)http://($user).silly-demo.($env.INGRESS_HOST)(ansi reset)..
+The application will be accessible through (ansi yellow_bold)http://($user).silly-demo.($env.INGRESS_HOST)(ansi reset).
 "
 
     okteto up --namespace $user
@@ -371,14 +386,20 @@ The application will be accessible through (ansi yellow_bold)http://($user).sill
 
 def "main destroy dev" [
     user: string
+    --db: string
 ] {
+
+    mut manifest = "crossplane/app-dev.yaml"
+
+    if $db != "" {
+
+        $manifest = "crossplane/app-dev-db.yaml"
+
+    }
 
     okteto down --namespace $user
 
-    (
-        kubectl --namespace $user delete
-            --filename crossplane/app-dev.yaml
-    )
+    kubectl --namespace $user delete --filename $manifest
 
 }
 

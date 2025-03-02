@@ -3,15 +3,19 @@ kind: AppClaim
 metadata:
   name: silly-demo
 spec:
-  id: vfarcic-silly-demo
+  id: jdoe-silly-demo
   compositionSelector:
     matchLabels:
       type: backend
       location: local
   parameters:
-    namespace: vfarcic
+    namespace: jdoe
     image: ghcr.io/vfarcic/idp-full-demo
     tag: 0.0.5
     port: 8080
-    host: vfarcic.silly-demo.35.196.1.49.nip.io
+    host: jdoe.silly-demo.35.196.1.49.nip.io
     ingressClassName: contour
+    db:
+      secret: silly-demo-db
+      storeName: google
+      name: main

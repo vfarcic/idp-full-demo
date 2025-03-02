@@ -1,6 +1,6 @@
 #!/usr/bin/env nu
 
-def "main apply crossplane" [
+def --env "main apply crossplane" [
     --provider = none,      # Which provider to use. Available options are `none`, `google`, `aws`, and `azure`
     --app = false,          # Whether to apply DOT App Configuration
     --db = false,           # Whether to apply DOT SQL Configuration
@@ -138,13 +138,13 @@ aws_secret_access_key = ($env.AWS_SECRET_ACCESS_KEY)
 
     if $app {
 
-        print $"(ansi yellow_bold)Applying `dot-application` Configuration...(ansi reset)"
+        print $"(ansi green_bold)Applying `dot-application` Configuration...(ansi reset)"
 
         {
             apiVersion: "pkg.crossplane.io/v1"
             kind: "Configuration"
             metadata: { name: "crossplane-app" }
-            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-application:v0.7.23" }
+            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-application:v0.7.29" }
         } | to yaml | kubectl apply --filename -
 
         if $policies {
@@ -182,7 +182,6 @@ aws_secret_access_key = ($env.AWS_SECRET_ACCESS_KEY)
                 spec: {
                     policyName: "dot-app"
                     validationActions: ["Deny"]
-                    # matchResources: { namespaceSelector: { matchLabels: { "kubernetes.io/metadata.name": a-team } } }
                 }
             } | to yaml | kubectl apply --filename -
 
@@ -192,14 +191,14 @@ aws_secret_access_key = ($env.AWS_SECRET_ACCESS_KEY)
 
     if $db {
 
-        print $"(ansi yellow_bold)Applying `dot-sql` Configuration...(ansi reset)"
+        print $"(ansi green_bold)Applying `dot-sql` Configuration...(ansi reset)"
 
         if $provider == "google" {
             
             start $"https://console.cloud.google.com/marketplace/product/google/sqladmin.googleapis.com?project=($project_id)"
             
             print $"
-(ansi green_bold)ENABLE(ansi reset) the API.
+(ansi yellow_bold)ENABLE(ansi reset) the API.
 Press any key to continue.
 "
             input
@@ -217,7 +216,7 @@ Press any key to continue.
 
     if $github {
 
-        print $"(ansi yellow_bold)Applying `dot-github` Configuration...(ansi reset)"
+        print $"(ansi green_bold)Applying `dot-github` Configuration...(ansi reset)"
 
         {
             apiVersion: "pkg.crossplane.io/v1"
@@ -314,10 +313,17 @@ Press any key to continue.
 
     wait crossplane
 
+    {
+        apiVersion: "kubernetes.crossplane.io/v1alpha1"
+        kind: "ProviderConfig"
+        metadata: { name: "default" }
+        spec: { credentials: { source: "InjectedIdentity" } }
+    } | to yaml | kubectl apply --filename -
+
     if $db and $provider != "none" {
 
         (
-            main apply providerconfig $provider
+            apply providerconfig $provider
                 --google_project_id $project_id
         )
 
@@ -373,6 +379,8 @@ def "main delete crossplane" [
     if ($kind | is-not-empty) and ($name | is-not-empty) and ($namespace | is-not-empty) { 
         kubectl --namespace $namespace delete $kind $name
     }
+
+    print $"Waiting for (ansi green_bold)Crossplane managed resources(ansi reset) to be deleted..."
     
     mut command = { kubectl get managed --output name }
     if ($name | is-not-empty) {
@@ -388,7 +396,7 @@ def "main delete crossplane" [
     mut counter = ($resources | wc -l | into int)
 
     while $counter > 0 {
-        print $"($resources)\nWaiting for remaining (ansi yellow_bold)($counter)(ansi reset) managed resources to be (ansi yellow_bold)removed(ansi reset)...\n"
+        print $"($resources)\nWaiting for remaining (ansi green_bold)($counter)(ansi reset) managed resources to be (ansi green_bold)removed(ansi reset)...\n"
         sleep 10sec
         $resources = (do $command)
         $counter = ($resources | wc -l | into int)
@@ -396,7 +404,7 @@ def "main delete crossplane" [
 
 }
 
-def "main apply providerconfig" [
+def "apply providerconfig" [
     provider: string,
     --google_project_id: string,
 ] {
@@ -462,7 +470,7 @@ def "main apply providerconfig" [
 
 def "wait crossplane" [] {
 
-    print $"(ansi yellow_bold)Waiting for Crossplane providers to be deployed...(ansi reset)"
+    print $"(ansi green_bold)Waiting for Crossplane providers to be deployed...(ansi reset)"
 
     sleep 60sec
 

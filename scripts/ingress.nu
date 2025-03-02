@@ -1,7 +1,7 @@
 #!/usr/bin/env nu
 
 def "main apply ingress" [
-    class = "traefik" # The class of Ingress controller to apply. Available options: traefik, contour, nginx
+    class = "contour"   # The class of Ingress controller to apply. Available options: traefik, contour, nginx
     --provider = "none"
     --env_prefix = ""
 ] {
