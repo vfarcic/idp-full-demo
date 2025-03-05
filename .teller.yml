@@ -14,3 +14,5 @@ providers:
           aws-secret-access-key: AWS_SECRET_ACCESS_KEY
           aws-account-id: AWS_ACCOUNT_ID
           azure-tenant: AZURE_TENANT
+          upcloud-username: UPCLOUD_USERNAME
+          upcloud-password: UPCLOUD_PASSWORD

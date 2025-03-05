@@ -3,17 +3,17 @@ kind: AppClaim
 metadata:
   name: silly-demo
 spec:
-  id: jdoe-silly-demo
+  id: egulliksen-silly-demo
   compositionSelector:
     matchLabels:
       type: backend
       location: local
   parameters:
-    namespace: jdoe
+    namespace: egulliksen
     image: ghcr.io/vfarcic/idp-full-demo
     tag: 0.0.5
     port: 8080
-    host: jdoe.silly-demo.35.196.1.49.nip.io
+    host: egulliksen.silly-demo.34.138.189.121.nip.io
     ingressClassName: contour
     db:
       secret: silly-demo-db
