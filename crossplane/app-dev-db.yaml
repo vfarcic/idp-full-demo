@@ -13,7 +13,7 @@ spec:
     image: ghcr.io/vfarcic/idp-full-demo
     tag: 0.0.5
     port: 8080
-    host: egulliksen.silly-demo.34.138.189.121.nip.io
+    host: egulliksen.silly-demo.34.75.111.202.nip.io
     ingressClassName: contour
     db:
       secret: silly-demo-db

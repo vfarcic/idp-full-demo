@@ -20,7 +20,9 @@
     "kubevela@1.9.13",
     "okteto@3.4.0",
     "git@2.48.1",
-    "postgresql@17.4"
+    "postgresql@17.4",
+    "mirrord@3.134.0",
+    "air@1.61.7"
   ],
   "shell": {
     "init_hook": [

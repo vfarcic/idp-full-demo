@@ -1,6 +1,10 @@
 #!/usr/bin/env nu
 
-def "main apply ingress" [
+# Applies Ingress
+#
+# Examples:
+# > main apply ingress contour --provider aws
+def --env "main apply ingress" [
     class = "contour"   # The class of Ingress controller to apply. Available options: traefik, contour, nginx
     --provider = "none"
     --env_prefix = ""
@@ -16,12 +20,9 @@ def "main apply ingress" [
 
     } else if $class == "contour" {
 
-        helm repo add bitnami https://charts.bitnami.com/bitnami
-
-        helm repo update
-
         (
-            helm upgrade --install contour bitnami/contour
+            helm upgrade --install contour 
+                oci://registry-1.docker.io/bitnamicharts/contour
                 --namespace contour --create-namespace --wait
         )
     
@@ -83,7 +84,7 @@ def "main get ingress" [
     
     mut ingress_ip = ""
   
-    if $provider == "aws" {
+    if $provider == "aws" or $provider == "upcloud" {
 
         sleep 30sec
 

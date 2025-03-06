@@ -2,7 +2,7 @@
 
 source scripts/kubernetes.nu
 source scripts/crossplane.nu
-source scripts/get-hyperscaler.nu
+source scripts/common.nu
 source scripts/ingress.nu
 source scripts/github.nu
 source scripts/argocd.nu
@@ -10,6 +10,7 @@ source scripts/backstage.nu
 source scripts/kubevela.nu
 source scripts/atlas.nu
 source scripts/external-secrets.nu
+source scripts/cnpg.nu
 
 def main [] {}
 
@@ -76,7 +77,7 @@ def "main setup all" [] {
 
     rm --force .env
 
-    let provider = main get hyperscaler
+    let provider = main get provider
     
     let ingress_data = setup common --hyperscaler $provider
 
@@ -124,9 +125,9 @@ def "main setup backstage" [] {
 
     rm --force .env
 
-    let hyperscaler = main get hyperscaler
+    let provider = main get provider
     
-    let ingress_data = setup common --hyperscaler $hyperscaler
+    let ingress_data = setup common --hyperscaler $provider
 
     let github_data = main get github
 
@@ -159,57 +160,92 @@ def "main setup backstage" [] {
 
 }
 
-# Sets up the apps demo
-def "main setup apps" [] {
-
-    rm --force .env
+def "main setup okteto" [] {
     
-    setup common
+    rm --force .env
 
-    let provider = main get hyperscaler
+    let provider = main get provider
 
-    let github_data = main get github
+    main create kubernetes $provider
+
+    main apply ingress --provider $provider
 
     (
         main apply crossplane --provider $provider
-            --db true --app true --github true
-            --github_user $github_data.user
-            --github_token $github_data.token
+            --db true --app true --skip_login true
     )
 
-    upsert crossplane $provider $github_data.user
+    main apply cnpg
+
+    main apply atlas
+
+    if $provider == "google" {(
+        main apply external_secrets $provider
+            --google_project_id $env.PROJECT_ID
+    )}
+
+    kubectl create namespace egulliksen
+
+    kubectl create namespace vfarcic
+
+    kubectl create namespace sfarcic
+
+    kubectl create namespace staging
+
+    main print source
 
 }
 
-# Sets up the policies demo
-def "main setup policies" [] {
-
+def "main setup dev" [] {
+    
     rm --force .env
 
-    setup common
+    let provider = main get provider
 
-    main apply crossplane --app true
+    main create kubernetes $provider
 
-    mkdir tmp
+    main apply ingress --provider $provider
 
-    cp crossplane/app-solo.yaml tmp/appclaim.yaml
+    (
+        main apply crossplane --provider $provider
+            --db true --app true --skip_login true
+    )
+
+    main apply atlas
+
+    (
+        main apply external_secrets $provider
+            --google_project_id $env.PROJECT_ID
+    )
+
+    kubectl create namespace egulliksen
+
+    kubectl create namespace vfarcic
+
+    kubectl create namespace sfarcic
+
+    kubectl create namespace staging
+
+    main print source
 
 }
 
-# Sets up the CLIs demo
-def "main setup clis" [] {
+def "main uninstall dev" [
+    user: string
+    --db: string
+] {
 
-    rm --force .env
-    
-    setup common
+    mut manifest = "crossplane/app-dev.yaml"
 
-    let github_data = main get github
+    if $db != "" {
 
-    main apply crossplane --app true
+        $manifest = "crossplane/app-dev-db.yaml"
 
-    kubectl create namespace a-team
-    
-    kubectl --namespace a-team apply --filename crossplane/app-solo.yaml
+    }
+
+    okteto down --namespace $user
+
+    kubectl --namespace $user delete --filename $manifest
 
 }
 
@@ -264,43 +300,6 @@ def "main destroy backstage" [] {
     
     gh repo delete $"($env.GITHUB_USER)/idp-full-app"
 
-}
-
-# Destroys the apps demo
-def "main destroy apps" [] {
-
-    kubectl --namespace a-team delete --filename crossplane/repo.yaml
-
-    kubectl --namespace a-team delete --filename idp-full-app/apps
-
-    main delete crossplane
-
-    if $env.HYPERSCALER == "google" {
-
-        gcloud projects delete $env.PROJECT_ID --quiet
-
-    }
-
-    main destroy kubernetes kind
-
-    gh repo delete $"($env.GITHUB_USER)/idp-full-app"
-
-}
-
-# Destroys the policies demo
-def "main destroy policies" [] {
-
-    main destroy kubernetes kind
-
-}
-
-# Destroys the CLIs demo
-def "main destroy clis" [] {
-
-    gh repo delete $"($env.GITHUB_USER))/idp-full-app"
-
-    main destroy kubernetes kind
-    
 }
 
 def "main get resource types" [] {
@@ -381,25 +380,6 @@ The application will be accessible through (ansi yellow_bold)http://($user).sill
 "
 
     okteto up --namespace $user
-
-}
-
-def "main destroy dev" [
-    user: string
-    --db: string
-] {
-
-    mut manifest = "crossplane/app-dev.yaml"
-
-    if $db != "" {
-
-        $manifest = "crossplane/app-dev-db.yaml"
-
-    }
-
-    okteto down --namespace $user
-
-    kubectl --namespace $user delete --filename $manifest
 
 }
 

@@ -1,0 +1,15 @@
+{
+  "target": {
+    "path": "deployment/silly-demo",
+    "namespace": "staging"
+  },
+  "feature": {
+    "network": {
+      "incoming": "steal"
+    },
+    "env": false
+  },
+  "agent": {
+    "namespace": "staging"
+  }
+}

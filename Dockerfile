@@ -1,10 +1,11 @@
 FROM golang:1.23.3-alpine AS build
 RUN mkdir /src
 WORKDIR /src
-ADD ./go.mod .
-ADD ./go.sum .
-ADD ./vendor .
-ADD ./*.go ./
+COPY ./go.mod .
+COPY ./go.sum .
+COPY ./vendor .
+COPY ./*.go ./
+COPY ./internal ./internal
 RUN GOOS=linux GOARCH=amd64 go build -o silly-demo
 RUN chmod +x silly-demo
 

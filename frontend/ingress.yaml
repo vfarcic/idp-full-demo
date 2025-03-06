@@ -1,0 +1,25 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    description: This is a silly demo frontend
+    language: TypeScript
+    owner: Viktor Farcic (viktor@farcic.com)
+    team: dot
+  labels:
+    app.kubernetes.io/name: silly-demo-frontend
+  name: silly-demo-frontend
+spec:
+  ingressClassName: contour
+  rules:
+    - host: silly-demo-frontend.34.118.251.24.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: silly-demo-frontend
+                port:
+                  number: 3000

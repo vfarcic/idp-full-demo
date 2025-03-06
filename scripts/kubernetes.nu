@@ -80,17 +80,10 @@ Press (ansi yellow_bold)any key(ansi reset) to continue.
         )}
 
         (
-            print $"upctl kubernetes create --name ($name) --zone us-nyc1
-                --node-group count=($min_nodes),name=dot,plan=($vm_size)
-                --kubernetes-api-allow-ip  all --network dot
-                --version \"1.30\""
-        )
-
-        (
             upctl kubernetes create --name $name --zone us-nyc1
                 --node-group $"count=($min_nodes),name=dot,plan=($vm_size)"
-                --kubernetes-api-allow-ip  all --network dot
-                --version "1.30"
+                --plan dev-md  --network $name --version "1.30"
+                --kubernetes-api-allow-ip "0.0.0.0/0"
         )
 
         (

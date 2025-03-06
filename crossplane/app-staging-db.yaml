@@ -3,15 +3,19 @@ kind: AppClaim
 metadata:
   name: silly-demo
 spec:
-  id: egulliksen-silly-demo
+  id: silly-demo
   compositionSelector:
     matchLabels:
       type: backend
       location: local
   parameters:
-    namespace: egulliksen
+    namespace: staging
     image: ghcr.io/vfarcic/idp-full-demo
-    tag: 0.0.5
+    tag: 0.0.7
     port: 8080
-    host: egulliksen.silly-demo.34.75.111.202.nip.io
+    host: staging.silly-demo.34.118.251.24.nip.io
     ingressClassName: contour
+    db:
+      secret: silly-demo-db
+      storeName: google
+      name: main
