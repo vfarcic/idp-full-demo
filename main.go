@@ -24,6 +24,8 @@ func main() {
 		slog.SetLogLoggerLevel(slog.LevelDebug)
 	}
 
+	// FIXME: Remove
+	slog.Debug("DB Endpoint: %s", os.Getenv("DB_ENDPOINT"))
 	// Server
 	log.Println("Starting server...")
 	router := gin.New()

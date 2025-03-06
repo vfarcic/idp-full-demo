@@ -230,6 +230,19 @@ def "main setup dev" [] {
 
 }
 
+def "main destroy dev" [
+    --provider: string
+] {
+
+    (
+        main delete crossplane --kind sqlclaim
+            --name silly-demo-db --namespace staging
+    )
+    
+    main destroy kubernetes $provider
+
+}
+
 def "main uninstall dev" [
     user: string
     --db: string

@@ -22,7 +22,7 @@ spec:
       containers:
         - env:
             - name: REACT_APP_BACKEND_URL
-              value: http://staging.silly-demo.34.118.251.24.nip.io
+              value: http://staging.silly-demo.34.74.187.90.nip.io
           image: ghcr.io/vfarcic/silly-demo-frontend:v1.5.36
           livenessProbe:
             httpGet:

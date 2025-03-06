@@ -5,12 +5,7 @@
   },
   "feature": {
     "network": {
-      "incoming": {
-        "mode": "steal",
-        "http_filter": {
-          "header_filter": "User: vfarcic"
-        }
-      }
+      "incoming": "mirror"
     }
   },
   "agent": {

@@ -23,6 +23,8 @@ func getConn() *pgx.Conn {
 		user := os.Getenv("DB_USERNAME")
 		pass := os.Getenv("DB_PASSWORD")
 		endpoint := os.Getenv("DB_ENDPOINT")
+		// FIXME: Remove
+		// endpoint := "THIS_ENDPOINT_DOES_NOT_EXISTS"
 		port := os.Getenv("DB_PORT")
 		name := os.Getenv("DB_NAME")
 		url = fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, pass, endpoint, port, name)
