@@ -9,11 +9,10 @@ spec:
       type: backend
       location: local
   parameters:
-    namespace: staging
     image: ghcr.io/vfarcic/idp-full-demo
     tag: 0.0.7
     port: 8080
-    host: staging.silly-demo.34.74.187.90.nip.io
+    host: staging.silly-demo.35.231.186.105.nip.io
     ingressClassName: contour
     db:
       secret: silly-demo-db

@@ -59,9 +59,6 @@ Press any key to continue.
 
         sleep 5sec
 
-        print $project_id
-        print $sa
-    
         (
             gcloud projects add-iam-policy-binding
                 --role roles/admin $project_id
@@ -103,6 +100,8 @@ aws_secret_access_key = ($env.AWS_SECRET_ACCESS_KEY)
             kubectl --namespace crossplane-system
                 create secret generic aws-creds
                 --from-file creds=./aws-creds.conf
+                --from-literal $"accessKeyID=($env.AWS_ACCESS_KEY_ID)"
+                --from-literal $"secretAccessKey=($env.AWS_SECRET_ACCESS_KEY)"
         )
 
     } else if $provider == "azure" {
@@ -209,7 +208,7 @@ Press any key to continue.
             apiVersion: "pkg.crossplane.io/v1"
             kind: "Configuration"
             metadata: { name: "crossplane-sql" }
-            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-sql:v1.0.14" }
+            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-sql:v1.1.18" }
         } | to yaml | kubectl apply --filename -
 
     }
