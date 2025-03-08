@@ -160,13 +160,13 @@ def "main setup backstage" [] {
 
 }
 
-def "main setup okteto" [] {
+def "main setup dev" [] {
     
     rm --force .env
 
-    let provider = main get provider --providers [aws google]
+    let provider = main get provider
 
-    main create kubernetes $provider --min_nodes 3
+    main create kubernetes $provider
 
     let ingress_data = main apply ingress --provider $provider
 
@@ -270,80 +270,6 @@ def "main setup okteto" [] {
             --for=condition=Ready
             --timeout 600s
     )
-
-    main print source
-
-}
-
-def "main destroy okteto" [
-    --provider: string
-] {
-
-    (
-        main delete crossplane --kind sqlclaim
-            --name silly-demo-db --namespace staging
-    )
-
-    main destroy kubernetes $provider
-
-}
-
-def "main setup dev" [] {
-    
-    rm --force .env
-
-    let provider = main get provider
-
-    main create kubernetes $provider
-
-    let ingress_data = main apply ingress --provider $provider
-
-    (
-        main apply crossplane --provider $provider
-            --db true --app true --skip_login true
-    )
-
-    main apply atlas
-
-    if $provider == "google" {
-        
-        (
-            main apply external_secrets google
-                --google_project_id $env.PROJECT_ID
-        )
-
-    } else if $provider == "azure" {
-        
-        (
-            main apply external_secrets azure
-                --azure_key_vault_name $env.RESOURCE_GROUP
-        )
-        
-    } else if $provider == "aws" {
-        
-        main apply external_secrets aws
-        
-    }
-
-    kubectl create namespace egulliksen
-
-    kubectl create namespace vfarcic
-
-    kubectl create namespace sfarcic
-
-    kubectl create namespace staging
-
-    open frontend/ingress.yaml |
-        upsert spec.rules.0.host $"staging.silly-demo-frontend.($ingress_data.host)" |
-        save frontend/ingress.yaml --force
-
-    open frontend/deployment.yaml |
-        upsert spec.template.spec.containers.0.env.0.value $"http://staging.silly-demo.($ingress_data.host)" |
-        save frontend/deployment.yaml --force
-
-    open crossplane/app-staging-db.yaml |
-        upsert spec.parameters.host $"staging.silly-demo.($ingress_data.host)" |
-        save crossplane/app-staging-db.yaml --force
 
     main print source
 
