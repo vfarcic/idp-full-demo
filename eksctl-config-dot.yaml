@@ -7,7 +7,7 @@ metadata:
 managedNodeGroups:
 - name: primary
   instanceType: t3.medium
-  minSize: 2
+  minSize: 3
   maxSize: 4
   iam:
     withAddonPolicies:

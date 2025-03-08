@@ -12,9 +12,9 @@ spec:
     image: ghcr.io/vfarcic/idp-full-demo
     tag: 0.0.7
     port: 8080
-    host: staging.silly-demo.35.231.186.105.nip.io
+    host: staging.silly-demo.44.208.175.85.nip.io
     ingressClassName: contour
     db:
       secret: silly-demo-db
-      storeName: google
+      storeName: aws
       name: main

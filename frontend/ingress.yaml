@@ -12,7 +12,7 @@ metadata:
 spec:
   ingressClassName: contour
   rules:
-  - host: staging.silly-demo-frontend.35.231.186.105.nip.io
+  - host: staging.silly-demo-frontend.44.208.175.85.nip.io
     http:
       paths:
       - path: /
