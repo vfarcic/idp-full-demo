@@ -189,7 +189,8 @@ def "main setup mirrord" [] {
 
     mut secret_name = "silly-demo-db"
     if $provider == "azure" {
-        secret_name = $"silly-demo-db-($env.RESOURCE_GROUP)"
+
+        $secret_name = $"silly-demo-db-($env.RESOURCE_GROUP)"
 
         open crossplane/azure-sql-password.yaml |
             upsert metadata.name $"silly-demo-db-($env.RESOURCE_GROUP)-password" |
@@ -234,14 +235,16 @@ def "main setup mirrord" [] {
     sleep 3sec
 
     mut db_resource = "instances.rds.aws.upbound.io"
+    mut db_resource_name = "silly-demo-db"
     if $provider == "google" {
         $db_resource = "databaseinstance.sql.gcp.upbound.io"
     } else if $provider == "azure" {
         $db_resource = "servers.dbforpostgresql.azure.upbound.io"
+        $db_resource_name = $"silly-demo-db-($env.RESOURCE_GROUP)"
     }
 
     (
-        kubectl wait $db_resource silly-demo-db
+        kubectl wait $db_resource $db_resource_name
             --for=condition=Ready
             --timeout 600s
     )
