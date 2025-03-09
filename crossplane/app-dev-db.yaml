@@ -16,5 +16,5 @@ spec:
     ingressClassName: contour
     db:
       secret: silly-demo-db
-      storeName: google
+      storeName: azure
       name: main

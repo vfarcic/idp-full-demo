@@ -187,6 +187,20 @@ def "main setup mirrord" [] {
 
     kubectl create namespace staging
 
+    mut secret_name = "silly-demo-db"
+    if $provider == "azure" {
+        secret_name = $"silly-demo-db-($env.RESOURCE_GROUP)"
+
+        open crossplane/azure-sql-password.yaml |
+            upsert metadata.name $"silly-demo-db-($env.RESOURCE_GROUP)-password" |
+            save crossplane/azure-sql-password.yaml --force
+
+        open crossplane/azure-sql-no-secrets-store.yaml |
+            upsert spec.id $"silly-demo-db-($env.RESOURCE_GROUP)" |
+            save crossplane/azure-sql-no-secrets-store.yaml --force
+
+    }
+
     open frontend/ingress.yaml |
         upsert spec.rules.0.host $"staging.silly-demo-frontend.($ingress_data.host)" |
         save frontend/ingress.yaml --force
@@ -197,12 +211,8 @@ def "main setup mirrord" [] {
 
     open crossplane/app-staging-db.yaml |
         upsert spec.parameters.host $"staging.silly-demo.($ingress_data.host)" |
-        upsert spec.parameters.db.storeName $provider |
+        upsert spec.parameters.db.secret $secret_name |
         save crossplane/app-staging-db.yaml --force
-
-    open crossplane/app-dev-db.yaml |
-        upsert spec.parameters.db.storeName $provider |
-        save crossplane/app-dev-db.yaml --force
 
     (
         kubectl --namespace staging apply
@@ -226,6 +236,8 @@ def "main setup mirrord" [] {
     mut db_resource = "instances.rds.aws.upbound.io"
     if $provider == "google" {
         $db_resource = "databaseinstance.sql.gcp.upbound.io"
+    } else if $provider == "azure" {
+        $db_resource = "servers.dbforpostgresql.azure.upbound.io"
     }
 
     (
