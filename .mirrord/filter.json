@@ -8,7 +8,7 @@
       "incoming": {
         "mode": "steal",
         "http_filter": {
-          "header_filter": "User: vfarcic"
+          "path_filter": ".+user=vfarcic.*"
         }
       }
     }
