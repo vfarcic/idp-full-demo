@@ -215,10 +215,10 @@ def "main setup mirrord" [] {
         upsert spec.parameters.db.secret $secret_name |
         save crossplane/app-staging-db.yaml --force
 
-    (
+    if $provider != "upcloud" {(
         kubectl --namespace staging apply
             --filename $"crossplane/($provider)-sql-password.yaml"
-    )
+    )}
 
     (
         kubectl --namespace staging apply
@@ -234,20 +234,26 @@ def "main setup mirrord" [] {
 
     sleep 3sec
 
-    mut db_resource = "instances.rds.aws.upbound.io"
     mut db_resource_name = "silly-demo-db"
+    mut db_resource = "instances.rds.aws.upbound.io"
     if $provider == "google" {
         $db_resource = "databaseinstance.sql.gcp.upbound.io"
     } else if $provider == "azure" {
         $db_resource = "servers.dbforpostgresql.azure.upbound.io"
         $db_resource_name = $"silly-demo-db-($env.RESOURCE_GROUP)"
+    } else if $provider == "upcloud" {
+        $db_resource = "manageddatabasepostgresql.database.upcloud.com"
     }
+
+    print $"Waiting for the (ansi yellow_bold)database server(ansi reset) to become available..."
 
     (
         kubectl wait $db_resource $db_resource_name
             --for=condition=Ready
             --timeout 600s
     )
+
+    print $"Waiting for the (ansi yellow_bold)application(ansi reset) to become available..."
 
     (
         kubectl --namespace staging
@@ -261,13 +267,17 @@ def "main setup mirrord" [] {
 }
 
 def "main destroy mirrord" [
-    --provider: string
+    provider: string
 ] {
 
     (
         main delete crossplane --kind sqlclaim
             --name silly-demo-db --namespace staging
     )
+
+    main delete ingress
+
+    sleep 30sec
     
     main destroy kubernetes $provider
 

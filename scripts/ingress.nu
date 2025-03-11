@@ -131,3 +131,21 @@ def "main get ingress" [
     {ip: $ingress_ip, host: $"($ingress_ip).nip.io", class: $class}
 
 }
+
+def --env "main delete ingress" [
+    class = "contour"   # The class of Ingress controller to apply. Available options: traefik, contour, nginx
+] {
+
+    print $"Uninstalling (ansi yellow_bold)Ingress(ansi reset)..."
+
+    if $class == "traefik" {
+
+        helm uninstall traefik --namespace traefik
+
+    } else if $class == "contour" {
+
+        helm uninstall contour  --namespace contour
+    
+    }
+
+}
