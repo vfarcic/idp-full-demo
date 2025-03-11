@@ -133,6 +133,32 @@ aws_secret_access_key = ($env.AWS_SECRET_ACCESS_KEY)
                 --from-file creds=./azure-creds.json
         )
 
+    } else if $provider == "upcloud" {
+
+        if UPCLOUD_USERNAME not-in $env {
+            $env.UPCLOUD_USERNAME = input $"(ansi yellow_bold)UpCloud Username: (ansi reset)"
+        }
+        $"export UPCLOUD_USERNAME=($env.UPCLOUD_USERNAME)\n"
+            | save --append .env
+
+        if UPCLOUD_PASSWORD not-in $env {
+            $env.UPCLOUD_PASSWORD = input $"(ansi yellow_bold)UpCloud Password: (ansi reset)"
+        }
+        $"export UPCLOUD_PASSWORD=($env.UPCLOUD_PASSWORD)\n"
+            | save --append .env
+
+        {
+            apiVersion: "v1"
+            kind: "Secret"
+            metadata: {
+                name: "upcloud-creds"
+            }
+            type: "Opaque"
+            stringData: {
+                creds: $"{\"username\": \"($env.UPCLOUD_USERNAME)\", \"password\": \"($env.UPCLOUD_PASSWORD)\"}"
+            }
+        } | to yaml | kubectl --namespace crossplane-system apply --filename -
+
     }
 
     if $app {
@@ -208,7 +234,7 @@ Press any key to continue.
             apiVersion: "pkg.crossplane.io/v1"
             kind: "Configuration"
             metadata: { name: "crossplane-sql" }
-            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-sql:v1.1.18" }
+            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-sql:v1.1.20" }
         } | to yaml | kubectl apply --filename -
 
     }
@@ -457,6 +483,24 @@ def "apply providerconfig" [
                     secretRef: {
                         namespace: "crossplane-system"
                         name: "azure-creds"
+                        key: "creds"
+                    }
+                }
+            }
+        } | to yaml | kubectl apply --filename -
+
+    } else if $provider == "upcloud" {
+
+        {
+            apiVersion: "provider.upcloud.com/v1beta1"
+            kind: "ProviderConfig"
+            metadata: { name: default }
+            spec: {
+                credentials: {
+                    source: "Secret"
+                    secretRef: {
+                        namespace: "crossplane-system"
+                        name: "upcloud-creds"
                         key: "creds"
                     }
                 }
