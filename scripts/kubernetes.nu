@@ -204,9 +204,9 @@ def "main destroy kubernetes" [
 
         upctl kubernetes delete $name
 
-        sleep 60sec
+        print $"Waiting for (ansi yellow_bold)5 minutes(ansi reset) to fully clean up the cluster..."
 
-        print $"Deleting (ansi yellow_bold)peering network(ansi reset)..."
+        sleep 300sec
 
         print $"Deleting (ansi yellow_bold)network(ansi reset)..."
 
