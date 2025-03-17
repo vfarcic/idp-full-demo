@@ -97,7 +97,9 @@ Press (ansi yellow_bold)any key(ansi reset) to continue.
                 --write $env.KUBECONFIG
         )
 
-        sleep 60sec
+        print $"Waiting for (ansi yellow_bold)5 minutes(ansi reset) to fully set up the cluster..."
+
+        sleep 300sec
 
     } else if $provider == "kind" {
 
@@ -204,9 +206,9 @@ def "main destroy kubernetes" [
 
         upctl kubernetes delete $name
 
-        print $"Waiting for (ansi yellow_bold)5 minutes(ansi reset) to fully clean up the cluster..."
+        print $"Waiting for (ansi yellow_bold)10 minutes(ansi reset) to fully clean up the cluster..."
 
-        sleep 300sec
+        sleep 600sec
 
         print $"Deleting (ansi yellow_bold)network(ansi reset)..."
 
