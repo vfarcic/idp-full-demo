@@ -87,7 +87,7 @@ Press (ansi yellow_bold)any key(ansi reset) to continue.
             upctl kubernetes create --name $name --zone us-nyc1
                 --node-group $"count=($min_nodes),name=dot,plan=($vm_size)"
                 --plan dev-md  --network $name --version "1.30"
-                --kubernetes-api-allow-ip "0.0.0.0/0"
+                --kubernetes-api-allow-ip "0.0.0.0/0" --wait
         )
 
         print $"Getting (ansi yellow_bold)kubeconfig(ansi reset)..."
@@ -96,6 +96,8 @@ Press (ansi yellow_bold)any key(ansi reset) to continue.
             upctl kubernetes config $name --output yaml
                 --write $env.KUBECONFIG
         )
+
+        sleep 60sec
 
     } else if $provider == "kind" {
 
@@ -202,7 +204,9 @@ def "main destroy kubernetes" [
 
         upctl kubernetes delete $name
 
-        sleep 180sec
+        sleep 60sec
+
+        print $"Deleting (ansi yellow_bold)peering network(ansi reset)..."
 
         print $"Deleting (ansi yellow_bold)network(ansi reset)..."
 
