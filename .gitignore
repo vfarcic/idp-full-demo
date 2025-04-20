@@ -8,3 +8,5 @@
 /devbox.lock
 /backstage
 /gke_gcloud_auth_plugin_cache
+/eksctl-config-dot.yaml
+/kind.yaml
