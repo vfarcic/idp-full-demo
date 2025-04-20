@@ -90,6 +90,12 @@ def "main setup all" [] {
             --ingress_class_name $ingress_data.class
     )
 
+    open argocd/app.yaml
+        | upsert spec.source.repoURL $"https://github.com/($github_data.user)/idp-full-app"
+        | save argocd/app.yaml --force
+
+    kubectl apply --filename argocd/app.yaml
+
     (
         main apply crossplane
             --provider $provider
@@ -112,44 +118,7 @@ def "main setup all" [] {
         | upsert spec.parameters.ingressClassName "contour"
         | save crossplane/app.yaml --force
 
-    open argocd/app.yaml
-        | upsert spec.source.repoURL $"https://github.com/($github_data.user)/idp-full-app"
-        | save argocd/app.yaml --force
-
     upsert crossplane $provider $github_data.user
-
-}
-
-# Sets up the Backstage demo
-def "main setup backstage" [] {
-
-    rm --force .env
-
-    let provider = main get provider
-    
-    let ingress_data = setup common --hyperscaler $provider
-
-    let github_data = main get github
-
-    (
-        main apply argocd 
-            --host_name $"argocd.($ingress_data.host)"
-            --apply_apps false
-            --ingress_class_name $ingress_data.class
-    )
-
-    open argocd/app.yaml
-        | upsert spec.source.repoURL $"https://github.com/($github_data.user)/idp-full-app"
-        | save argocd/app.yaml --force
-
-    kubectl apply --filename argocd/app.yaml
-
-    main apply crossplane --db true --app true --github true
-
-    open crossplane/app.yaml
-        | upsert spec.parameters.image $"ghcr.io/vfarcic/silly-demo"
-        | upsert spec.parameters.tag "1.4.342"
-        | save crossplane/app.yaml --force
 
     (
         gh repo create $"($github_data.user)/idp-full-app"
@@ -158,151 +127,10 @@ def "main setup backstage" [] {
 
     gh repo clone $"($github_data.user)/idp-full-app"
 
-}
-
-def "main setup mirrord" [] {
-    
-    rm --force .env
-
-    
-    let provider = (
-        main get provider
-            --providers [aws azure google upcloud]
-    )
-
-    main create kubernetes $provider --min_nodes 3
-
-    let ingress_data = main apply ingress --provider $provider
-
-    (
-        main apply crossplane --provider $provider
-            --db true --app true --skip_login true
-    )
-
     main apply atlas
 
-    kubectl create namespace egulliksen
-
-    kubectl create namespace vfarcic
-
-    kubectl create namespace staging
-
-    mut secret_name = "silly-demo-db"
-    if $provider == "azure" {
-
-        $secret_name = $"silly-demo-db-($env.RESOURCE_GROUP)"
-
-        open crossplane/azure-sql-password.yaml |
-            upsert metadata.name $"silly-demo-db-($env.RESOURCE_GROUP)-password" |
-            save crossplane/azure-sql-password.yaml --force
-
-        open crossplane/azure-sql-no-secrets-store.yaml |
-            upsert spec.id $"silly-demo-db-($env.RESOURCE_GROUP)" |
-            save crossplane/azure-sql-no-secrets-store.yaml --force
-
-    }
-
-    open frontend/ingress.yaml |
-        upsert spec.rules.0.host $"staging.silly-demo-frontend.($ingress_data.host)" |
-        save frontend/ingress.yaml --force
-
-    open frontend/deployment.yaml |
-        upsert spec.template.spec.containers.0.env.0.value $"http://staging.silly-demo.($ingress_data.host)" |
-        save frontend/deployment.yaml --force
-
-    open crossplane/app-staging-db.yaml |
-        upsert spec.parameters.host $"staging.silly-demo.($ingress_data.host)" |
-        upsert spec.parameters.db.secret $secret_name |
-        save crossplane/app-staging-db.yaml --force
-
-    if $provider != "upcloud" {(
-        kubectl --namespace staging apply
-            --filename $"crossplane/($provider)-sql-password.yaml"
-    )}
-
-    (
-        kubectl --namespace staging apply
-            --filename $"crossplane/($provider)-sql-no-secrets-store.yaml"
-    )
-
-    (
-        kubectl --namespace staging apply
-            --filename crossplane/app-staging-db.yaml
-    )
-
-    kubectl --namespace staging apply --filename frontend
-
-    sleep 3sec
-
-    mut db_resource_name = "silly-demo-db"
-    mut db_resource = "instances.rds.aws.upbound.io"
-    if $provider == "google" {
-        $db_resource = "databaseinstance.sql.gcp.upbound.io"
-    } else if $provider == "azure" {
-        $db_resource = "servers.dbforpostgresql.azure.upbound.io"
-        $db_resource_name = $"silly-demo-db-($env.RESOURCE_GROUP)"
-    } else if $provider == "upcloud" {
-        $db_resource = "manageddatabasepostgresql.database.upcloud.com"
-    }
-
-    print $"Waiting for the (ansi yellow_bold)database server(ansi reset) to become available..."
-
-    (
-        kubectl wait $db_resource $db_resource_name
-            --for=condition=Ready
-            --timeout 600s
-    )
-
-    print $"Waiting for the (ansi yellow_bold)application(ansi reset) to become available..."
-
-    (
-        kubectl --namespace staging
-            wait pods --for=condition=Ready
-            --selector app.kubernetes.io/name=silly-demo
-            --timeout 180s
-    )
-
-    main print source
-
 }
 
-def "main destroy mirrord" [
-    provider: string
-] {
-
-    (
-        main delete crossplane --kind sqlclaim
-            --name silly-demo-db --namespace staging
-    )
-
-    main delete ingress
-
-    sleep 30sec
-    
-    main destroy kubernetes $provider
-
-}
-
-def "main uninstall dev" [
-    user: string
-    --db: string
-] {
-
-    mut manifest = "crossplane/app-dev.yaml"
-
-    if $db != "" {
-
-        $manifest = "crossplane/app-dev-db.yaml"
-
-    }
-
-    okteto down --namespace $user
-
-    kubectl --namespace $user delete --filename $manifest
-
-}
-
-# Destroys the complete demo
 def "main destroy all" [
     hyperscaler: string
     github_user: string
@@ -346,12 +174,46 @@ def "main destroy all" [
     
 }
 
-# Sets up the Backstage demo
-def "main destroy backstage" [] {
+def "main setup ai" [] {
+
+    rm --force .env
+
+    let provider = main get provider --providers ["aws" "azure", "google", "upcloud"]
     
-    main destroy kubernetes $env.HYPERSCALER
-    
-    gh repo delete $"($env.GITHUB_USER)/idp-full-app"
+    let ingress_data = setup common --hyperscaler kind
+
+    let github_data = main get github
+
+    (
+        main apply crossplane
+            --provider $provider
+            --db true --app true --github true --skip_login true
+            --github_user $github_data.user
+            --github_token $github_data.token
+    )
+
+    (
+        docker login
+            --username $github_data.user
+            --password $github_data.token
+            $"ghcr.io/($github_data.user)"
+    )
+
+    open crossplane/app.yaml
+        | upsert spec.parameters.image $"ghcr.io/($github_data.user)/idp-full-app"
+        | upsert spec.parameters.tag "FIXME"
+        | upsert spec.parameters.host $"silly-demo.($ingress_data.host)"
+        | upsert spec.parameters.ingressClassName "contour"
+        | save crossplane/app.yaml --force
+
+    upsert crossplane $provider $github_data.user
+
+}
+
+# Destroys the complete demo
+def "main destroy ai" [] {
+
+    main destroy kubernetes kind
 
 }
 
