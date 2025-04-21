@@ -1,5 +1,6 @@
 # Demo Manifests and Code Used in DevOps Toolkit Videos
 
+[![Mirrord Magic: Write Code Locally, See It Remotely!](https://img.youtube.com/vi/NLa0K5mybzo/0.jpg)](https://youtu.be/NLa0K5mybzo)
 [![Stop Using Docker and Local Kubernetes for Dev Environments! (feat. Okteto)](https://img.youtube.com/vi/Fa1VUumXqsc/0.jpg)](https://youtu.be/Fa1VUumXqsc)
 [![From Zero to Fully Operational Developer Platform in 5 Steps!](https://img.youtube.com/vi/fZ2DjdqT1e0/0.jpg)](https://youtu.be/fZ2DjdqT1e0)
 [![How to Create Custom CLIs That Make Your DevOps Life Easier - Nushell](https://img.youtube.com/vi/TgQZz2kGysk/0.jpg)](https://youtu.be/TgQZz2kGysk)
