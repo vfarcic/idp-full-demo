@@ -14,9 +14,11 @@
 - Take into the account previous choices when presenting questions.
 - Include any additional information you think the user might find useful (e.g., the available regions of the provider, PostgreSQL versions available in the selected provider, etc.). Use your internal knowledge base for that (do not try to discover it from the cluster).
 - If the input is not mandatory, instruct the user to type `skip` if it is text input or, if they are presented with options, to select the `skip` option.
+- Check the Composition to see whether values for some field are restricted and need to be specific.
 - When you ask for the Namespace, give the user the option to select one of the existing Namespaces. Include only Namespaces that contain the word `team`.
 - After you gather all the information you might need, generate the manifest and ask the user for the path where to save it.
 - Always use `spec.crossplane.compositionSelector.matchLabels` to select the Composition in the manifest you are generating.
+- Generate the combination of labels that match those available in Compositions so that the correct one is selected.
 - Do not include parts of the manifest that are optional and the user did not choose any value.
 - If the user selected to work with `SQL`, after creating the manifest, ask the user for the password they would like to assign to that database.
 - If the user selected to work with `SQL`, create the Kubernetes secret with that password in the same Namespace. The name of the secret should be the same as the name of the Composite resource with the addition of `-password` suffix.

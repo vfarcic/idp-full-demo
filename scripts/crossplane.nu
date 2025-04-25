@@ -61,11 +61,16 @@ def --env "main apply crossplane" [
 
         print $"\n(ansi yellow_bold)Applying `dot-application` Configuration...(ansi reset)\n"
 
+        mut version = "v2.0.2"
+        if not $preview {
+            $version = "v0.7.41"
+        }
+
         {
             apiVersion: "pkg.crossplane.io/v1"
             kind: "Configuration"
             metadata: { name: "crossplane-app" }
-            spec: { package: "xpkg.upbound.io/devops-toolkit/dot-application:v0.7.30" }
+            spec: { package: $"xpkg.upbound.io/devops-toolkit/dot-application:($version)" }
         } | to yaml | kubectl apply --filename -
 
         if $policies {
@@ -123,16 +128,16 @@ def --env "main apply crossplane" [
 
         }
 
-        mut dot_sql_version = "v2.1.8"
+        mut version = "v2.1.10"
         if not $preview {
-            $dot_sql_version = "v1.1.21"
+            $version = "v1.1.21"
         }
 
         {
             apiVersion: "pkg.crossplane.io/v1"
             kind: "Configuration"
             metadata: { name: "crossplane-sql" }
-            spec: { package: $"xpkg.upbound.io/devops-toolkit/dot-sql:($dot_sql_version)" }
+            spec: { package: $"xpkg.upbound.io/devops-toolkit/dot-sql:($version)" }
         } | to yaml | kubectl apply --filename -
 
     }
@@ -151,6 +156,23 @@ def --env "main apply crossplane" [
     }
 
     if $db or $github {
+
+        {
+            apiVersion: "rbac.authorization.k8s.io/v1"
+            kind: "ClusterRole"
+            metadata: {
+                name: "crossplane-all"
+                labels: {
+                    "rbac.crossplane.io/aggregate-to-crossplane": "true"
+                }
+            }
+            rules: [{
+                apiGroups: ["*"]
+                resources: ["*"]
+                verbs: ["*"]
+            }]
+        } | to yaml | kubectl apply --filename -
+    
 
         {
             apiVersion: "v1"
@@ -337,6 +359,50 @@ def "main delete crossplane" [
         sleep 10sec
         $resources = (do $command)
         $counter = ($resources | wc -l | into int)
+    }
+
+}
+
+def "main publish crossplane" [
+    package: string
+    --sources = ["compositions"]
+    --version = ""
+] {
+
+    mut version = $version
+    if $version == "" {
+        $version = $env.VERSION
+    }
+
+    package generate --sources $sources
+
+    crossplane xpkg login --token $env.UP_TOKEN
+
+    (
+        crossplane xpkg build --package-root package
+            --package-file $"($package).xpkg"
+    )
+
+    (
+        crossplane xpkg push --package-files $"($package).xpkg"
+            $"xpkg.upbound.io/($env.UP_ACCOUNT)/dot-($package):($version)"
+    )
+
+    rm --force $"package/($package).xpkg"
+
+    open config.yaml
+        | upsert spec.package $"xpkg.upbound.io/devops-toolkit/dot-($package):($version)"
+        | save config.yaml --force
+
+}
+
+def "package generate" [
+    --sources = ["compositions"]
+] {
+
+    for source in $sources {
+        kcl run $"kcl/($source).k" |
+            save $"package/($source).yaml" --force
     }
 
 }

@@ -190,6 +190,7 @@ def "main setup ai" [] {
             --db true --app true --github true --skip_login true
             --github_user $github_data.user
             --github_token $github_data.token
+            --preview true
     )
 
     (

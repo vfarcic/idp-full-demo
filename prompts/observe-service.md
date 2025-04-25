@@ -1,4 +1,5 @@
 - Ask the user to select one of the services available in any of the Namespaces of the cluster. Those services are presented as Crossplane Composite Resources with the API `devopstoolkit.live`.
+- Include only Claims.
 - Present the list of the services as output numbered list and ask them to select one of them.
 - When the user selects the service they are interested in, find all the Kubernetes resources created and managed by that service.
 - Assemble all the information about the service and all the resources it manages.
