@@ -8,6 +8,8 @@ Follow these general guidelines:
 - Ultrathink how to perform the steps and what all the available options you will present to the user are.
 - Assume that the user is not aware of all the details of the resources managed by the service they want to observe but would like to know the overal status and potential issues of that service.
 - Use colors and icons to make outputs easier to read.
+- Always present multiple choices as numbered lists.
+- Always use full API to retrieve, get, or describe resources.
 
 Follow these steps:
 

@@ -210,12 +210,22 @@ def "main setup ai" [] {
 
     main apply atlas
 
+    mkdir tmp
+
+    kubectl create namespace b-team
+
 }
 
 # Destroys the complete demo
 def "main destroy ai" [] {
 
     main destroy kubernetes kind
+
+    if PROJECT_ID in $env {
+        gcloud projects delete $env.PROJECT_ID --quiet
+    }
+
+    rm tmp/*.yaml
 
 }
 

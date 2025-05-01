@@ -17,6 +17,10 @@ Follow these general guidelines:
 - Ultrathink how to perform the steps and what all the available options you will present to the user are.
 - Use colors and icons to make outputs easier to read.
 - If asked to provide Ingress Class, detect available Ingress Classes and present a list. If there is only one Ingress Class, do not ask the user which one to use but populate the value automatically.
+- Always present multiple choices as numbered lists.
+- Always use full API to retrieve, get, or describe resources.
+- Always present all options to the user.
+- Explain each choice given to the user in detail.
 
 Follow these steps:
 

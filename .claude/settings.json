@@ -10,6 +10,17 @@
       "Bash(find:*)",
       "Bash(xargs:*)",
       "Bash(sort:*)",
+      "Bash(tr:*)",
+      "kubectl:*",
+      "grep:*",
+      "jq:*",
+      "awk:*",
+      "mkdir:*",
+      "echo:*",
+      "find:*",
+      "xargs:*",
+      "sort:*",
+      "tr:*",
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs("
     ]
