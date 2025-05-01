@@ -1,9 +1,7 @@
-Create a Kubernetes manifest:
+Create Kubernetes manifests:
 
 Follow these general guidelines:
 
-- Do NOT show the commands you are executing while gathering the information.
-- Do NOT show the output of the commands you are executing while gathering the information.
 - Show on the screen only information related to user input (the questions and the options).
 - When asking user question, ask the user one question at a time.
 - Ask only questions based on the CRD schema and limit them to `metadata.name`, `metadata.namespace`, and `spec`.
@@ -17,6 +15,8 @@ Follow these general guidelines:
 - Use Context7 MCP to find Crossplane information you might need.
 - Make a plan how you are going to execute the steps.
 - Ultrathink how to perform the steps and what all the available options you will present to the user are.
+- Use colors and icons to make outputs easier to read.
+- If asked to provide Ingress Class, detect available Ingress Classes and present a list. If there is only one Ingress Class, do not ask the user which one to use but populate the value automatically.
 
 Follow these steps:
 

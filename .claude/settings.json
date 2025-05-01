@@ -4,6 +4,12 @@
       "Bash(kubectl:*)",
       "Bash(grep:*)",
       "Bash(jq:*)",
+      "Bash(awk:*)",
+      "Bash(mkdir:*)",
+      "Bash(echo:*)",
+      "Bash(find:*)",
+      "Bash(xargs:*)",
+      "Bash(sort:*)",
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs("
     ]
