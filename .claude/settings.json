@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(kubectl:*)",
+      "Bash(grep:*)",
+      "Bash(jq:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs("
+    ]
+  }
+}

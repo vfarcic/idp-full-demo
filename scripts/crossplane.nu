@@ -182,7 +182,7 @@ def --env "main apply crossplane" [
                 namespace: "crossplane-system"
             }
         } | to yaml | kubectl apply --filename -
-        
+
         {
             apiVersion: "rbac.authorization.k8s.io/v1"
             kind: "ClusterRoleBinding"
@@ -200,10 +200,16 @@ def --env "main apply crossplane" [
         } | to yaml | kubectl apply --filename -
 
         {
-            apiVersion: "pkg.crossplane.io/v1alpha1"
-            kind: "ControllerConfig"
+            apiVersion: "pkg.crossplane.io/v1beta1"
+            kind: "DeploymentRuntimeConfig"
             metadata: { name: "crossplane-provider-helm" }
-            spec: { serviceAccountName: "crossplane-provider-helm" }
+            spec: { deploymentTemplate: { spec: {
+                selector: {}
+                template: { spec: {
+                    containers: [{ name: "package-runtime" }]
+                    serviceAccountName: "crossplane-provider-helm"
+                } }
+            } } }
         } | to yaml | kubectl apply --filename -
 
         {
@@ -212,7 +218,7 @@ def --env "main apply crossplane" [
             metadata: { name: "crossplane-provider-helm" }
             spec: {
                 package: "xpkg.upbound.io/crossplane-contrib/provider-helm:v0.19.0"
-                controllerConfigRef: { name: "crossplane-provider-helm" }
+                runtimeConfigRef: { name: "crossplane-provider-helm" }
             }
         } | to yaml | kubectl apply --filename -
 
@@ -242,10 +248,16 @@ def --env "main apply crossplane" [
         } | to yaml | kubectl apply --filename -
 
         {
-            apiVersion: "pkg.crossplane.io/v1alpha1"
-            kind: "ControllerConfig"
+            apiVersion: "pkg.crossplane.io/v1beta1"
+            kind: "DeploymentRuntimeConfig"
             metadata: { name: "crossplane-provider-kubernetes" }
-            spec: { serviceAccountName: "crossplane-provider-kubernetes" }
+            spec: { deploymentTemplate: { spec: {
+                selector: {}
+                template: { spec: {
+                    containers: [{ name: "package-runtime" }]
+                    serviceAccountName: "crossplane-provider-kubernetes"
+                } }
+            } } }
         } | to yaml | kubectl apply --filename -
 
         {
@@ -254,20 +266,13 @@ def --env "main apply crossplane" [
             metadata: { name: "crossplane-provider-kubernetes" }
             spec: {
                 package: "xpkg.upbound.io/crossplane-contrib/provider-kubernetes:v0.15.0"
-                controllerConfigRef: { name: "crossplane-provider-kubernetes" }
+                runtimeConfigRef: { name: "crossplane-provider-kubernetes" }
             }
         } | to yaml | kubectl apply --filename -
 
-        main wait crossplane
-
-        {
-            apiVersion: "kubernetes.crossplane.io/v1alpha1"
-            kind: "ProviderConfig"
-            metadata: { name: "default" }
-            spec: { credentials: { source: "InjectedIdentity" } }
-        } | to yaml | kubectl apply --filename -
-
     }
+
+    main wait crossplane
 
     if $db and $provider != "none" {
 

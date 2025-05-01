@@ -79,7 +79,7 @@ def "main setup all" [] {
 
     let provider = main get provider
     
-    let ingress_data = setup common --hyperscaler $provider
+    let ingress_data = setup common --provider $provider
 
     let github_data = main get github
 
@@ -180,7 +180,7 @@ def "main setup ai" [] {
 
     let provider = main get provider --providers ["aws" "azure", "google", "upcloud"]
     
-    let ingress_data = setup common --hyperscaler kind
+    let ingress_data = setup common --provider kind
 
     let github_data = main get github
 
@@ -190,7 +190,6 @@ def "main setup ai" [] {
             --db true --app true --github true --skip_login true
             --github_user $github_data.user
             --github_token $github_data.token
-            --preview true
     )
 
     (
@@ -208,6 +207,8 @@ def "main setup ai" [] {
         | save crossplane/app.yaml --force
 
     upsert crossplane $provider $github_data.user
+
+    main apply atlas
 
 }
 
@@ -335,12 +336,12 @@ def "upsert crossplane" [
 }
 
 def --env "setup common" [
-    --hyperscaler = "kind"
+    --provider = "kind"
 ] {
 
     mut ingress_class = "nginx"
 
-    if $hyperscaler != "kind" {
+    if $provider != "kind" {
         $ingress_class = "contour"
     }
 
@@ -348,10 +349,10 @@ def --env "setup common" [
 
     rm --force --recursive idp-full-app
 
-    main create kubernetes $hyperscaler
+    main create kubernetes $provider
 
     let ingress_data = (
-        main apply ingress $ingress_class --provider $hyperscaler
+        main apply ingress $ingress_class --provider $provider
     )
 
     kubectl create namespace a-team
