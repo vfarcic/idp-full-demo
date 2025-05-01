@@ -19,7 +19,6 @@ Follow these general guidelines:
 - If asked to provide Ingress Class, detect available Ingress Classes and present a list. If there is only one Ingress Class, do not ask the user which one to use but populate the value automatically.
 - Always present multiple choices as numbered lists.
 - Always use full API to retrieve, get, or describe resources.
-- Always present all options to the user.
 - Explain each choice given to the user in detail.
 
 Follow these steps:
@@ -27,7 +26,7 @@ Follow these steps:
 1. Discover all the Custom Resources a user can create in that Kubernetes cluster.
 2. Limit it to CRDs with the API `devopstoolkit.live` and include only Claims. Those CRDs were created by Crossplane Compositions.
 3. Output numbered list of Composite Resources a user can create and ask them to select one of them. Ensure that all Compositions for a given CRD (Composite Resource Definition) are presented.
-4. Based on the selected Composite Resource, ask the user for information you might need to generate YAML manifest that can be used to create that resource. Ensure that the user can select any of the Compositions within the selected Configuration.
+4. Based on the selected Composite Resource, ask the user for information you might need to generate YAML manifest that can be used to create that resource. Ensure that the user can select any of the Compositions within the selected Configuration. Present all parameters (including sub-parameters) to the user.
 5. After you gather all the information you might need, generate the manifest and ask the user for the path where to save it.
 6. Generate the combination of labels that match those available in Compositions so that the correct one is selected.
 7. If the user selected to work with `SQL`, after creating the manifest, ask the user for the password they would like to assign to that database. The password should be stored in the Secret manifest with the key `password`. If the user selected UpCloud provider, there is no need to create the secret.
