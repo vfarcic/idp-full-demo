@@ -225,7 +225,7 @@ def "main destroy ai" [] {
         gcloud projects delete $env.PROJECT_ID --quiet
     }
 
-    rm tmp/*.yaml
+    rm tmp/*.yaml --force
 
 }
 
