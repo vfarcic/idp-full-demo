@@ -178,7 +178,7 @@ def "main setup ai" [] {
 
     rm --force .env
 
-    let provider = main get provider --providers ["aws" "azure", "google", "upcloud"]
+    let provider = main get provider --providers ["aws" "azure", "google"]
     
     let ingress_data = setup common --provider kind
 
